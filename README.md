@@ -227,6 +227,8 @@ docker compose ps
 docker compose down
 ```
 
+For a full container runbook (production env vars, persistence, updates, troubleshooting), see [`docs/docker-deployment-guide.md`](docs/docker-deployment-guide.md).
+
 ### First sign-in
 
 The bootstrap admin is forced to reset its password on first sign-in before accessing any dashboard pages. Set the bootstrap credentials in your environment before first boot:
@@ -303,6 +305,7 @@ Important groups:
 
 - `docs/service-desk-analyst-runbook.md`
 - `docs/admin-deployment-guide.md`
+- `docs/docker-deployment-guide.md`
 - `docs/calendar-integration-plan.md`
 - `docs/tenant-setup.md`
 - `docs/architecture.md`
