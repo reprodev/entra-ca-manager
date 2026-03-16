@@ -25,6 +25,13 @@ Default local URL:
 
 - `http://127.0.0.1:3000`
 
+Docker quick start:
+
+```bash
+docker build -t entra-ca-manager:latest .
+docker run --rm -p 3000:3000 --env-file .env entra-ca-manager:latest
+```
+
 Core endpoints:
 
 - `GET /health`
@@ -185,6 +192,40 @@ KEYVAULT_SECRET_MAPPINGS=SESSION_SECRET=ca-session-secret,SSO_CLIENT_SECRET=ca-s
    - enforce HTTPS only and forward `X-Forwarded-Proto: https`
 4. Install a TLS certificate on the proxy
 5. Start with `npm start` or manage via `systemd` / `pm2`
+
+### Option C - Docker / containerized
+
+Build and run with Docker:
+
+```bash
+docker build -t entra-ca-manager:latest .
+docker run --name entra-ca-manager --detach \
+  -p 3000:3000 \
+  --env-file .env \
+  -e NODE_ENV=production \
+  -v entra_ca_data:/app/data \
+  entra-ca-manager:latest
+```
+
+Or use Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+To pass your environment settings with Compose:
+
+```bash
+docker compose --env-file .env up -d --build
+```
+
+Useful container commands:
+
+```bash
+docker compose logs -f
+docker compose ps
+docker compose down
+```
 
 ### First sign-in
 
