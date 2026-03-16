@@ -1,0 +1,41 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.next/
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Agent context — private, not for public repo
+CLAUDE.md
+CODEX.md
+
+# Azure credentials / secrets — never commit
+*.pem
+*.key
+credentials.json
+data/local-users.json
+data/local-users.json.bak
+data/local-users.json.tmp-*
+data/audit/

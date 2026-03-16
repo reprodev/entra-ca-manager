@@ -1,0 +1,1822 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA Manager â€” MSP Edition</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f3;
+    --bg-tertiary: #eeede9;
+    --bg-info: #e6f1fb;
+    --bg-danger: #fcebeb;
+    --bg-success: #eaf3de;
+    --bg-warning: #faeeda;
+    --text-primary: #1a1a18;
+    --text-secondary: #5f5e5a;
+    --text-tertiary: #888780;
+    --text-info: #185fa5;
+    --text-danger: #a32d2d;
+    --text-success: #3b6d11;
+    --text-warning: #854f0b;
+    --border-tertiary: rgba(0,0,0,0.10);
+    --border-secondary: rgba(0,0,0,0.18);
+    --border-primary: rgba(0,0,0,0.28);
+    --border-info: #b5d4f4;
+    --border-danger: #f7c1c1;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --font: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    --accent: #185fa5;
+    --accent-dark: #0c447c;
+    --accent-light: #e6f1fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1e1e1c;
+      --bg-secondary: #272724;
+      --bg-tertiary: #2e2e2b;
+      --bg-info: #0c2840;
+      --bg-danger: #2e1010;
+      --bg-success: #172a08;
+      --bg-warning: #2e1e08;
+      --text-primary: #e8e7e2;
+      --text-secondary: #b4b2a9;
+      --text-tertiary: #6e6d68;
+      --text-info: #85b7eb;
+      --text-danger: #f09595;
+      --text-success: #97c459;
+      --text-warning: #ef9f27;
+      --border-tertiary: rgba(255,255,255,0.08);
+      --border-secondary: rgba(255,255,255,0.14);
+      --border-primary: rgba(255,255,255,0.22);
+      --border-info: #185fa5;
+      --accent: #378add;
+      --accent-dark: #85b7eb;
+      --accent-light: #0c2840;
+    }
+  }
+  html, body { height: 100%; font-family: var(--font); background: var(--bg-tertiary); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar { width: 224px; min-width: 224px; background: var(--bg-primary); border-right: 0.5px solid var(--border-tertiary); display: flex; flex-direction: column; overflow-y: auto; }
+  .sidebar-logo { padding: 18px 16px 14px; border-bottom: 0.5px solid var(--border-tertiary); flex-shrink: 0; }
+  .logo-badge { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo-icon svg { width: 16px; height: 16px; fill: white; }
+  .logo-text { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .logo-sub { font-size: 11px; color: var(--text-tertiary); }
+  .tenant-picker { margin: 8px; padding: 8px 10px; border: 0.5px solid var(--border-tertiary); border-radius: var(--radius-md); cursor: pointer; background: var(--bg-secondary); transition: border-color 0.15s; }
+  .tenant-picker:hover { border-color: var(--border-secondary); }
+  .tp-label { font-size: 10px; color: var(--text-tertiary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tp-name { font-size: 13px; font-weight: 500; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; }
+  .nav-section { padding: 10px 8px 2px; }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 8px 5px; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 13px; color: var(--text-secondary); margin-bottom: 1px; transition: background 0.1s, color 0.1s; user-select: none; }
+  .nav-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.75; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-badge { margin-left: auto; font-size: 10px; font-weight: 600; background: var(--bg-danger); color: var(--text-danger); padding: 1px 6px; border-radius: 10px; }
+  .sidebar-footer { margin-top: auto; padding: 10px 12px 12px; border-top: 0.5px solid var(--border-tertiary); }
+  .user-row { display: flex; align-items: center; gap: 9px; }
+  .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: 600; flex-shrink: 0; }
+  .user-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+  .user-role { font-size: 10px; color: var(--text-tertiary); }
+
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  .topbar { height: 52px; background: var(--bg-primary); border-bottom: 0.5px solid var(--border-tertiary); display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0; }
+  .page-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .tb-spacer { flex: 1; }
+  .content { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: var(--radius-md); font-size: 12px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--border-secondary); background: var(--bg-primary); color: var(--text-primary); transition: background 0.1s; font-family: var(--font); white-space: nowrap; }
+  .btn:hover { background: var(--bg-secondary); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-sm { padding: 4px 9px; font-size: 11px; }
+  .btn-danger { background: var(--bg-danger); border-color: var(--border-danger); color: var(--text-danger); }
+
+  /* PILLS */
+  .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+  .pill-green { background: #eaf3de; color: #3b6d11; }
+  .pill-amber { background: #faeeda; color: #854f0b; }
+  .pill-red { background: #fcebeb; color: #a32d2d; }
+  .pill-blue { background: #e6f1fb; color: #185fa5; }
+  .pill-gray { background: #f1efe8; color: #5f5e5a; }
+  .pill-purple { background: #eeedfe; color: #3c3489; }
+  .pill-teal { background: #e1f5ee; color: #0f6e56; }
+
+  /* METRICS */
+  .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .metric-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 14px 16px; }
+  .metric-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+  .metric-val { font-size: 26px; font-weight: 600; color: var(--text-primary); line-height: 1.1; }
+  .metric-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+  .metric-change { font-size: 11px; margin-top: 3px; }
+  .change-up { color: #3b6d11; }
+  .change-dn { color: #a32d2d; }
+
+  /* CARDS */
+  .card { background: var(--bg-primary); border: 0.5px solid var(--border-tertiary); border-radius: var(--radius-lg); padding: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .card-link { font-size: 12px; color: var(--accent); cursor: pointer; }
+  .row2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  /* TABLES */
+  .full-table-card { background: var(--bg-primary); border: 0.5px solid var(--border-tertiary); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 20px; }
+  .ftc-header { display: flex; align-items: center; gap: 8px; padding: 13px 16px; border-bottom: 0.5px solid var(--border-tertiary); flex-wrap: wrap; }
+  .ftc-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .ftc-spacer { flex: 1; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-align: left; padding: 0 12px 8px; border-bottom: 0.5px solid var(--border-tertiary); white-space: nowrap; }
+  td { font-size: 12px; color: var(--text-primary); padding: 9px 12px; border-bottom: 0.5px solid var(--border-tertiary); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-secondary); }
+  .action-btns { display: flex; gap: 5px; }
+
+  /* SEARCH / FILTER INPUTS */
+  .search-input { padding: 6px 10px; border: 0.5px solid var(--border-secondary); border-radius: var(--radius-md); font-size: 12px; background: var(--bg-secondary); color: var(--text-primary); width: 190px; font-family: var(--font); }
+  .filter-select { padding: 6px 10px; border: 0.5px solid var(--border-secondary); border-radius: var(--radius-md); font-size: 12px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); }
+
+  /* ACTIVITY */
+  .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border-tertiary); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+  .ai-blue { background: #e6f1fb; color: #185fa5; }
+  .ai-green { background: #eaf3de; color: #3b6d11; }
+  .ai-amber { background: #faeeda; color: #854f0b; }
+  .ai-red { background: #fcebeb; color: #a32d2d; }
+  .activity-main { font-size: 12px; color: var(--text-primary); line-height: 1.4; }
+  .activity-time { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* STATUS DOTS */
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: #639922; }
+  .dot-amber { background: #ba7517; }
+  .dot-red { background: #e24b4a; }
+
+  /* TENANT CARDS */
+  .tenant-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .tenant-card { background: var(--bg-primary); border: 0.5px solid var(--border-tertiary); border-radius: var(--radius-lg); padding: 14px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+  .tenant-card:hover { border-color: var(--border-primary); }
+  .tc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .tc-avatar { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .tc-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .tc-domain { font-size: 11px; color: var(--text-tertiary); }
+  .tc-stats { display: flex; gap: 16px; padding-top: 10px; border-top: 0.5px solid var(--border-tertiary); }
+  .tc-stat-val { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .tc-stat-label { font-size: 10px; color: var(--text-tertiary); }
+
+  /* TRAVEL CARDS */
+  .travel-card { background: var(--bg-primary); border: 0.5px solid var(--border-tertiary); border-radius: var(--radius-lg); padding: 15px; margin-bottom: 10px; }
+  .tr-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .tr-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--accent); flex-shrink: 0; }
+  .tr-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .tr-sub { font-size: 11px; color: var(--text-tertiary); }
+  .tr-route { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+  .tr-dates { display: flex; gap: 20px; margin-bottom: 10px; }
+  .tr-date-label { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .tr-date-val { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+  .progress-bar { height: 4px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+  .progress-label { font-size: 10px; color: var(--text-tertiary); }
+
+  /* TIMELINE */
+  .timeline { padding-left: 4px; }
+  .tl-item { display: flex; gap: 14px; padding-bottom: 18px; position: relative; }
+  .tl-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 4px; position: relative; z-index: 1; }
+  .tl-line { position: absolute; left: 4px; top: 13px; bottom: 0; width: 1px; background: var(--border-tertiary); }
+  .tl-item:last-child .tl-line { display: none; }
+  .tl-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+  .tl-text { font-size: 12px; color: var(--text-primary); line-height: 1.4; }
+
+  /* POLICY ROWS */
+  .policy-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border-tertiary); }
+  .policy-row:last-child { border-bottom: none; }
+  .policy-info { flex: 1; min-width: 0; }
+  .policy-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .policy-desc { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+  .schedule-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: #eeedfe; color: #3c3489; padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+
+  /* TOGGLE */
+  .toggle { width: 34px; height: 19px; border-radius: 10px; position: relative; cursor: pointer; border: none; transition: background 0.2s; flex-shrink: 0; }
+  .toggle.on { background: var(--accent); }
+  .toggle.off { background: var(--border-secondary); }
+  .toggle-thumb { width: 13px; height: 13px; background: white; border-radius: 50%; position: absolute; top: 3px; transition: left 0.2s; }
+  .toggle.on .toggle-thumb { left: 18px; }
+  .toggle.off .toggle-thumb { left: 3px; }
+
+  /* MODAL */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal { background: var(--bg-primary); border-radius: var(--radius-xl); border: 0.5px solid var(--border-secondary); width: 540px; max-width: 100%; max-height: 92vh; overflow-y: auto; }
+  .modal-header { padding: 18px 20px 14px; border-bottom: 0.5px solid var(--border-tertiary); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg-primary); z-index: 1; }
+  .modal-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .modal-close { cursor: pointer; font-size: 20px; color: var(--text-tertiary); border: none; background: none; font-family: var(--font); line-height: 1; padding: 2px 6px; border-radius: 4px; }
+  .modal-close:hover { background: var(--bg-secondary); }
+  .modal-body { padding: 20px; }
+  .modal-footer { padding: 14px 20px; border-top: 0.5px solid var(--border-tertiary); display: flex; justify-content: flex-end; gap: 8px; position: sticky; bottom: 0; background: var(--bg-primary); }
+  .form-row { margin-bottom: 15px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; display: block; }
+  .form-input { width: 100%; padding: 8px 11px; border: 0.5px solid var(--border-secondary); border-radius: var(--radius-md); font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font); transition: border-color 0.15s; }
+  .form-input:focus { outline: none; border-color: var(--accent); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+  .form-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); cursor: pointer; padding: 3px 0; }
+
+  /* TABS */
+  .tab-bar { display: flex; gap: 0; border-bottom: 0.5px solid var(--border-tertiary); margin-bottom: 18px; }
+  .tab { padding: 8px 14px; font-size: 13px; cursor: pointer; color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.1s; white-space: nowrap; }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+  /* COUNTRY PICKER */
+  .country-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .country-opt { padding: 8px 4px; border: 0.5px solid var(--border-tertiary); border-radius: var(--radius-md); font-size: 12px; text-align: center; cursor: pointer; color: var(--text-secondary); transition: all 0.1s; }
+  .country-opt:hover { background: var(--bg-secondary); }
+  .country-opt.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+  /* ALERT BANNER */
+  .alert-banner { background: #faeeda; border: 0.5px solid #ef9f27; border-radius: var(--radius-md); padding: 10px 14px; font-size: 12px; color: #854f0b; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 8px; }
+  .alert-banner a { color: #854f0b; font-weight: 500; cursor: pointer; }
+  .info-banner { background: var(--bg-info); border: 0.5px solid var(--border-info); border-radius: var(--radius-md); padding: 10px 14px; font-size: 12px; color: var(--text-info); margin-bottom: 16px; display: flex; align-items: flex-start; gap: 8px; }
+
+  /* PAGE SECTION HEADER */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+
+  /* HEALTH ROWS */
+  .health-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid var(--border-tertiary); }
+  .health-row:last-child { border-bottom: none; }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+
+  /* RESPONSIVE */
+  @media (max-width: 860px) {
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .row2 { grid-template-columns: 1fr; }
+    .tenant-grid { grid-template-columns: repeat(2, 1fr); }
+    .sidebar { width: 200px; min-width: 200px; }
+  }
+  @media (max-width: 600px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: unset; height: auto; flex-direction: row; flex-wrap: wrap; overflow-x: auto; }
+    .main { min-height: 0; }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .tenant-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-badge">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1z"/></svg>
+        </div>
+        <div>
+          <div class="logo-text">CA Manager</div>
+          <div class="logo-sub">MSP Edition</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 8px;">
+      <div class="tenant-picker" onclick="showPage('tenants', null)">
+        <div class="tp-label">Active tenant</div>
+        <div class="tp-name" id="activeTenantName">Contoso Ltd <span style="font-size:11px; color:var(--text-tertiary);">âŒ„</span></div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" data-page="dashboard">
+        <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-page="tenants">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 1h6v6H1zm8 0h6v6H9zM1 9h6v6H1zm8 0h6v6H9z" opacity="0.35"/><path d="M2 2h4v4H2zm8 0h4v4h-4zM2 10h4v4H2zm8 0h4v4h-4z"/></svg>
+        Tenants
+        <span class="nav-badge">6</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Access Control</div>
+      <div class="nav-item" data-page="policies">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L2 4v4c0 3.7 2.56 7.12 6 8 3.44-.88 6-4.3 6-8V4L8 1z"/></svg>
+        CA Policies
+      </div>
+      <div class="nav-item" data-page="travel">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.69 1 2 3.69 2 7c0 4.5 6 9 6 9s6-4.5 6-9c0-3.31-2.69-6-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z"/></svg>
+        Travel Access
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-item" data-page="schedule">
+        <svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="3" width="12" height="11" rx="1.5" opacity="0.3"/><rect x="2" y="3" width="12" height="4" rx="1.5"/><line x1="5" y1="1" x2="5" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="11" y1="1" x2="11" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Schedules
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Management</div>
+      <div class="nav-item" data-page="users">
+        <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="5" r="3"/><path d="M2 13c0-3.31 2.69-6 6-6s6 2.69 6 6" opacity="0.5"/></svg>
+        Users & Groups
+      </div>
+      <div class="nav-item" data-page="alerts">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 14h14L8 1z" opacity="0.25"/><path d="M8 1L1 14h14L8 1z" stroke="currentColor" stroke-width="1" fill="none"/><line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="12" r="0.75" fill="currentColor"/></svg>
+        Alerts & Logs
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Settings</div>
+      <div class="nav-item admin-only" data-page="onboarding">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 2a5 5 0 110 10A5 5 0 018 3zm0 2a1 1 0 100 2 1 1 0 000-2zm-1 3h2v4H7V8z" opacity="0.3"/><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zM8 5a1 1 0 100 2 1 1 0 000-2zm-1 3h2v4H7V8z"/></svg>
+        Live Setup
+      </div>
+      <div class="nav-item admin-only" data-page="admin">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l2 2.1 2.8-.3.7 2.7L16 8l-2.5 2.5.3 2.8-2.7.7L8 16l-2.1-2-2.8.3-.7-2.7L0 8l2.5-2.5-.3-2.8 2.7-.7L8 1z" opacity="0.35"/><circle cx="8" cy="8" r="2.1"/></svg>
+        Admin
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar" id="userAvatar">JD</div>
+        <div>
+          <div class="user-name" id="userName">James Dobson</div>
+          <div class="user-role" id="userRole">MSP Administrator</div>
+        </div>
+      </div>
+      <button class="btn btn-sm" style="margin-top:8px;width:100%;" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <div class="topbar">
+      <span class="page-title" id="pageTitle">Dashboard</span>
+      <div class="tb-spacer"></div>
+      <div id="topbarActions">
+        <button class="btn btn-primary" onclick="openModal('newPolicyModal')">+ New Policy</button>
+      </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="content" id="page-dashboard">
+      <div class="alert-banner">
+        <span style="font-size:14px;">âš </span>
+        <span>3 travel access rules expire within 24 hours. <a onclick="showPage('travel')">Review now â†’</a></span>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Active tenants</div>
+          <div class="metric-val">6</div>
+          <div class="metric-sub">All connected</div>
+          <div class="metric-change change-up">â†‘ 1 added this week</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">CA policies total</div>
+          <div class="metric-val">34</div>
+          <div class="metric-sub">28 enabled Â· 4 report-only</div>
+          <div class="metric-change">2 disabled</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Travel rules active</div>
+          <div class="metric-val" style="color:#ba7517;">7</div>
+          <div class="metric-sub">3 expiring within 24h</div>
+          <div class="metric-change change-dn">Action required</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Sign-in events (24h)</div>
+          <div class="metric-val">1,284</div>
+          <div class="metric-sub">Across all tenants</div>
+          <div class="metric-change change-up">â†‘ 12% vs yesterday</div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent activity</span>
+            <span class="card-link" onclick="showPage('alerts')">View all â†’</span>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ai-green">âœ“</div>
+            <div>
+              <div class="activity-main"><strong>Travel rule activated</strong> â€” Sarah Mitchell (Contoso Ltd) allowed from Spain</div>
+              <div class="activity-time">2 minutes ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ai-red">!</div>
+            <div>
+              <div class="activity-main"><strong>Policy breach blocked</strong> â€” Unknown device sign-in attempt, Northwind Azure</div>
+              <div class="activity-time">18 minutes ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ai-blue">â†»</div>
+            <div>
+              <div class="activity-main"><strong>Policy updated</strong> â€” MFA required for admins applied to Fabrikam Inc</div>
+              <div class="activity-time">1 hour ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ai-amber">â±</div>
+            <div>
+              <div class="activity-main"><strong>Travel access expiring</strong> â€” Tom Reyes (Alpine Corp) rule ends in 6 hours</div>
+              <div class="activity-time">3 hours ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ai-green">âœ“</div>
+            <div>
+              <div class="activity-main"><strong>Schedule completed</strong> â€” Weekend lockdown re-enabled for Woodgrove Bank</div>
+              <div class="activity-time">Yesterday 23:00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Tenant health</span></div>
+          <div class="health-row"><div class="status-dot dot-green"></div><span style="font-size:12px;flex:1;">Contoso Ltd</span><span class="pill pill-green">Healthy</span><span style="font-size:11px;color:var(--text-tertiary);">8 policies</span></div>
+          <div class="health-row"><div class="status-dot dot-green"></div><span style="font-size:12px;flex:1;">Fabrikam Inc</span><span class="pill pill-green">Healthy</span><span style="font-size:11px;color:var(--text-tertiary);">6 policies</span></div>
+          <div class="health-row"><div class="status-dot dot-amber"></div><span style="font-size:12px;flex:1;">Northwind Azure</span><span class="pill pill-amber">Warning</span><span style="font-size:11px;color:var(--text-tertiary);">5 policies</span></div>
+          <div class="health-row"><div class="status-dot dot-green"></div><span style="font-size:12px;flex:1;">Alpine Corp</span><span class="pill pill-green">Healthy</span><span style="font-size:11px;color:var(--text-tertiary);">7 policies</span></div>
+          <div class="health-row"><div class="status-dot dot-green"></div><span style="font-size:12px;flex:1;">Woodgrove Bank</span><span class="pill pill-green">Healthy</span><span style="font-size:11px;color:var(--text-tertiary);">5 policies</span></div>
+          <div class="health-row"><div class="status-dot dot-red"></div><span style="font-size:12px;flex:1;">Tailspin Toys</span><span class="pill pill-red">Alert</span><span style="font-size:11px;color:var(--text-tertiary);">3 policies</span></div>
+        </div>
+      </div>
+
+      <div class="full-table-card">
+        <div class="ftc-header">
+          <span class="ftc-title">Policies requiring attention</span>
+          <div class="ftc-spacer"></div>
+          <button class="btn btn-sm" onclick="showPage('policies')">View all policies â†’</button>
+        </div>
+        <table>
+          <thead><tr><th>Policy name</th><th>Tenant</th><th>Status</th><th>Type</th><th>Last change</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:500;">Block legacy auth</td>
+              <td style="color:var(--text-tertiary);font-size:11px;">Northwind Azure</td>
+              <td><span class="pill pill-amber">Review needed</span></td>
+              <td><span class="pill pill-gray">Block</span></td>
+              <td style="color:var(--text-tertiary);font-size:11px;">7 days ago</td>
+              <td><div class="action-btns"><button class="btn btn-sm">Edit</button><button class="btn btn-sm">Enable</button></div></td>
+            </tr>
+            <tr>
+              <td style="font-weight:500;">Travel: APAC (Sarah M)</td>
+              <td style="color:var(--text-tertiary);font-size:11px;">Contoso Ltd</td>
+              <td><span class="pill pill-amber">Expiring 6h</span></td>
+              <td><span class="pill pill-blue">Travel</span></td>
+              <td style="color:var(--text-tertiary);font-size:11px;">3 days ago</td>
+              <td><div class="action-btns"><button class="btn btn-sm">Extend</button><button class="btn btn-sm btn-danger">End</button></div></td>
+            </tr>
+            <tr>
+              <td style="font-weight:500;">Admin MFA enforce</td>
+              <td style="color:var(--text-tertiary);font-size:11px;">Tailspin Toys</td>
+              <td><span class="pill pill-red">Disabled</span></td>
+              <td><span class="pill pill-gray">Grant</span></td>
+              <td style="color:var(--text-tertiary);font-size:11px;">12 days ago</td>
+              <td><div class="action-btns"><button class="btn btn-sm btn-primary">Enable</button><button class="btn btn-sm">Audit</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== TENANTS ===== -->
+    <div class="content hidden" id="page-tenants">
+      <div class="section-header">
+        <span class="section-title">All tenants</span>
+        <button class="btn btn-primary admin-only" onclick="openModal('newTenantModal')">+ Add tenant</button>
+      </div>
+      <div class="tenant-grid" id="tenantGrid"></div>
+    </div>
+
+    <!-- ===== POLICIES ===== -->
+    <div class="content hidden" id="page-policies">
+      <div class="full-table-card">
+        <div class="ftc-header">
+          <span class="ftc-title">Conditional access policies</span>
+          <div class="ftc-spacer"></div>
+          <select class="filter-select" id="policyTenantFilter" onchange="renderPolicies()">
+            <option value="">All tenants</option>
+            <option>Contoso Ltd</option><option>Fabrikam Inc</option><option>Northwind Azure</option>
+            <option>Alpine Corp</option><option>Woodgrove Bank</option><option>Tailspin Toys</option>
+          </select>
+          <input class="search-input" id="policySearch" placeholder="Search policiesâ€¦" oninput="renderPolicies()" style="margin-left:8px;">
+          <button class="btn btn-primary" style="margin-left:8px;" onclick="openModal('newPolicyModal')">+ New policy</button>
+        </div>
+        <table>
+          <thead><tr><th>Policy name</th><th>Tenant</th><th>Status</th><th>Type</th><th>Schedule</th><th>Actions</th></tr></thead>
+          <tbody id="policyTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== TRAVEL ===== -->
+    <div class="content hidden" id="page-travel">
+      <div class="section-header">
+        <span class="section-title">Travel access rules</span>
+        <button class="btn btn-primary" onclick="openModal('travelModal')">+ New travel rule</button>
+      </div>
+      <div id="travelList"></div>
+    </div>
+
+    <!-- ===== SCHEDULES ===== -->
+    <div class="content hidden" id="page-schedule">
+      <div class="section-header">
+        <span class="section-title">Scheduled policy changes</span>
+        <button class="btn btn-primary" onclick="openModal('scheduleModal')">+ Schedule change</button>
+      </div>
+      <div class="row2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Upcoming changes</span></div>
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-line"></div><div><div class="tl-time">Today 23:00</div><div class="tl-text"><strong>Weekend policy</strong> â€” Enable on Woodgrove Bank</div></div></div>
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-line"></div><div><div class="tl-time">Tomorrow 06:00</div><div class="tl-text"><strong>Travel rule end</strong> â€” Deactivate Tom Reyes, Alpine Corp (Dubai)</div></div></div>
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-line"></div><div><div class="tl-time">Fri 08:00</div><div class="tl-text"><strong>MFA enforcement</strong> â€” Re-apply admin MFA to Tailspin Toys</div></div></div>
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-line"></div><div><div class="tl-time">Sat 23:00</div><div class="tl-text"><strong>Block policy</strong> â€” Enable weekend lockdown, Contoso Ltd</div></div></div>
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-line"></div><div><div class="tl-time">Mon 06:00</div><div class="tl-text"><strong>Block policy</strong> â€” Disable weekend lockdown, Contoso Ltd</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Recurring schedules</span></div>
+          <div class="policy-row">
+            <div class="policy-info">
+              <div class="policy-name">Weekend lockdown</div>
+              <div class="policy-desc">Sat 23:00 â†’ Mon 06:00 Â· Contoso, Woodgrove</div>
+            </div>
+            <span class="schedule-badge">âŸ³ Weekly</span>
+            <button class="toggle on" onclick="toggleBtn(this)"><div class="toggle-thumb"></div></button>
+          </div>
+          <div class="policy-row">
+            <div class="policy-info">
+              <div class="policy-name">After-hours MFA</div>
+              <div class="policy-desc">18:00â€“08:00 daily Â· All tenants</div>
+            </div>
+            <span class="schedule-badge">âŸ³ Daily</span>
+            <button class="toggle on" onclick="toggleBtn(this)"><div class="toggle-thumb"></div></button>
+          </div>
+          <div class="policy-row">
+            <div class="policy-info">
+              <div class="policy-name">Month-end reporting</div>
+              <div class="policy-desc">Relax CA for finance group Â· Last 3 days/month</div>
+            </div>
+            <span class="schedule-badge">âŸ³ Monthly</span>
+            <button class="toggle off" onclick="toggleBtn(this)"><div class="toggle-thumb"></div></button>
+          </div>
+          <div class="policy-row">
+            <div class="policy-info">
+              <div class="policy-name">Annual compliance review</div>
+              <div class="policy-desc">Notify admin Â· 1st Jan each year</div>
+            </div>
+            <span class="schedule-badge">âŸ³ Yearly</span>
+            <button class="toggle on" onclick="toggleBtn(this)"><div class="toggle-thumb"></div></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== USERS ===== -->
+    <div class="content hidden" id="page-users">
+      <div class="full-table-card">
+        <div class="ftc-header">
+          <span class="ftc-title">Users &amp; groups</span>
+          <div class="ftc-spacer"></div>
+          <input class="search-input" placeholder="Search usersâ€¦">
+          <select class="filter-select" style="margin-left:8px;"><option value="">All tenants</option><option>Contoso Ltd</option><option>Fabrikam Inc</option><option>Northwind Azure</option><option>Alpine Corp</option><option>Woodgrove Bank</option><option>Tailspin Toys</option></select>
+          <button class="btn" style="margin-left:8px;">Export users</button>
+        </div>
+        <table>
+          <thead><tr><th>User</th><th>Tenant</th><th>Role</th><th>Policies assigned</th><th>Last sign-in</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div style="font-weight:500;">Sarah Mitchell</div><div style="font-size:11px;color:var(--text-tertiary);">s.mitchell@contoso.com</div></td>
+              <td style="font-size:12px;">Contoso Ltd</td>
+              <td><span class="pill pill-purple">Admin</span></td>
+              <td style="font-size:12px;color:var(--text-secondary);">3 policies</td>
+              <td style="font-size:11px;color:var(--text-tertiary);">Today 09:14</td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><button class="btn btn-sm">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:500;">Tom Reyes</div><div style="font-size:11px;color:var(--text-tertiary);">t.reyes@alpinecorp.com</div></td>
+              <td style="font-size:12px;">Alpine Corp</td>
+              <td><span class="pill pill-blue">User</span></td>
+              <td style="font-size:12px;color:var(--text-secondary);">2 policies + travel</td>
+              <td style="font-size:11px;color:var(--text-tertiary);">Today 07:32</td>
+              <td><span class="pill pill-amber">Travelling</span></td>
+              <td><button class="btn btn-sm">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:500;">Priya Kapoor</div><div style="font-size:11px;color:var(--text-tertiary);">p.kapoor@fabrikam.com</div></td>
+              <td style="font-size:12px;">Fabrikam Inc</td>
+              <td><span class="pill pill-blue">User</span></td>
+              <td style="font-size:12px;color:var(--text-secondary);">2 policies</td>
+              <td style="font-size:11px;color:var(--text-tertiary);">Yesterday 16:45</td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><button class="btn btn-sm">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:500;">Marcus Wells</div><div style="font-size:11px;color:var(--text-tertiary);">m.wells@tailspin.com</div></td>
+              <td style="font-size:12px;">Tailspin Toys</td>
+              <td><span class="pill pill-purple">Admin</span></td>
+              <td style="font-size:12px;color:var(--text-secondary);">1 policy</td>
+              <td style="font-size:11px;color:var(--text-tertiary);">3 days ago</td>
+              <td><span class="pill pill-red">Locked</span></td>
+              <td><button class="btn btn-sm btn-danger">Unlock</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:500;">Elena Vasquez</div><div style="font-size:11px;color:var(--text-tertiary);">e.vasquez@woodgrove.com</div></td>
+              <td style="font-size:12px;">Woodgrove Bank</td>
+              <td><span class="pill pill-teal">Compliance</span></td>
+              <td style="font-size:12px;color:var(--text-secondary);">5 policies</td>
+              <td style="font-size:11px;color:var(--text-tertiary);">Today 08:55</td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><button class="btn btn-sm">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== ALERTS ===== -->
+    <div class="content hidden" id="page-alerts">
+      <div class="full-table-card">
+        <div class="ftc-header">
+          <span class="ftc-title">Audit log &amp; alerts</span>
+          <div class="ftc-spacer"></div>
+          <select class="filter-select"><option>All types</option><option>Policy change</option><option>Travel rule</option><option>Sign-in event</option><option>Alert</option></select>
+          <select class="filter-select" style="margin-left:8px;"><option>Last 7 days</option><option>Last 24 hours</option><option>Last 30 days</option></select>
+          <button class="btn" style="margin-left:8px;">Export CSV</button>
+        </div>
+        <table>
+          <thead><tr><th>Time</th><th>Event</th><th>Tenant</th><th>Actor</th><th>Severity</th></tr></thead>
+          <tbody>
+            <tr><td style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;">Today 09:47</td><td style="font-size:12px;">Travel rule activated â€” Spain access for Sarah Mitchell</td><td style="font-size:11px;">Contoso Ltd</td><td style="font-size:11px;color:var(--text-tertiary);">System</td><td><span class="pill pill-green">Info</span></td></tr>
+            <tr><td style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;">Today 09:31</td><td style="font-size:12px;">Blocked sign-in â€” unknown device, unrecognised country</td><td style="font-size:11px;">Northwind Azure</td><td style="font-size:11px;color:var(--text-tertiary);">Policy engine</td><td><span class="pill pill-red">High</span></td></tr>
+            <tr><td style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;">Today 08:55</td><td style="font-size:12px;">Policy updated â€” MFA required for all admins</td><td style="font-size:11px;">Fabrikam Inc</td><td style="font-size:11px;color:var(--text-tertiary);">J. Dobson</td><td><span class="pill pill-blue">Info</span></td></tr>
+            <tr><td style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;">Today 06:00</td><td style="font-size:12px;">Scheduled trigger â€” weekend lockdown disabled</td><td style="font-size:11px;">Woodgrove Bank</td><td style="font-size:11px;color:var(--text-tertiary);">Scheduler</td><td><span class="pill pill-green">Info</span></td></tr>
+            <tr><td style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;">Yesterday 23:00</td><td style="font-size:12px;">Scheduled trigger â€” weekend lockdown enabled</td><td style="font-size:11px;">Woodgrove Bank</td><td style="font-size:11px;color:var(--text-tertiary);">Scheduler</td><td><span class="pill pill-green">Info</span></td></tr>
+            <tr><td style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;">Yesterday 18:45</td><td style="font-size:12px;">Admin MFA policy disabled â€” potential misconfiguration</td><td style="font-size:11px;">Tailspin Toys</td><td style="font-size:11px;color:var(--text-tertiary);">M. Wells</td><td><span class="pill pill-red">Critical</span></td></tr>
+            <tr><td style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;">2 days ago</td><td style="font-size:12px;">New tenant onboarded â€” Tailspin Toys connected</td><td style="font-size:11px;">Tailspin Toys</td><td style="font-size:11px;color:var(--text-tertiary);">J. Dobson</td><td><span class="pill pill-blue">Info</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    <!-- ===== LIVE SETUP (ONBOARDING) ===== -->
+    <div class="content hidden" id="page-onboarding">
+      <div class="info-banner">
+        <span style="font-size:14px;flex-shrink:0;">â„¹</span>
+        <span>CA Manager runs in <strong>demo mode</strong> by default. Use this page to validate real Azure app registration credentials before enabling live Graph access.</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start;">
+
+        <!-- Validation form -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Validate app registration</span>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Azure tenant ID</label>
+            <input id="ob-tenantId" class="form-input" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:monospace;font-size:12px;">
+          </div>
+          <div class="form-row">
+            <label class="form-label">App (client) ID</label>
+            <input id="ob-clientId" class="form-input" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:monospace;font-size:12px;">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Client secret value</label>
+            <input id="ob-clientSecret" type="password" class="form-input" placeholder="Paste client secretâ€¦">
+          </div>
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Organisation name <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></label>
+              <input id="ob-tenantName" class="form-input" placeholder="Acme Corporation">
+            </div>
+            <div>
+              <label class="form-label">Primary domain <span style="color:var(--text-tertiary);font-weight:400;">(optional)</span></label>
+              <input id="ob-domain" class="form-input" placeholder="acme.onmicrosoft.com">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+            <button class="btn btn-primary" id="ob-validateBtn" onclick="runOnboardingValidation()">Validate credentials</button>
+            <span id="ob-spinner" class="hidden" style="font-size:12px;color:var(--text-tertiary);">Checkingâ€¦</span>
+          </div>
+        </div>
+
+        <!-- Results panel -->
+        <div class="card" id="ob-results" style="display:none;">
+          <div class="card-header">
+            <span class="card-title">Validation result</span>
+            <span id="ob-result-badge"></span>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <div id="ob-check-fields" class="health-row">
+              <span id="ob-check-fields-dot" class="status-dot dot-amber"></span>
+              <span style="font-size:12px;flex:1;">Required fields present</span>
+            </div>
+            <div id="ob-check-token" class="health-row">
+              <span id="ob-check-token-dot" class="status-dot dot-amber"></span>
+              <span style="font-size:12px;flex:1;">Token acquired via MSAL</span>
+            </div>
+            <div id="ob-check-graph" class="health-row">
+              <span id="ob-check-graph-dot" class="status-dot dot-amber"></span>
+              <span style="font-size:12px;flex:1;">Graph API reachable</span>
+            </div>
+            <div id="ob-check-org" class="health-row">
+              <span id="ob-check-org-dot" class="status-dot dot-amber"></span>
+              <span style="font-size:12px;flex:1;">Organisation readable</span>
+            </div>
+          </div>
+
+          <div id="ob-error-row" class="hidden" style="background:var(--bg-danger);border:0.5px solid var(--border-danger);border-radius:var(--radius-md);padding:10px 12px;font-size:12px;color:var(--text-danger);margin-bottom:14px;" id="ob-error-msg"></div>
+
+          <div id="ob-env-block" class="hidden">
+            <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">Add to your <code style="font-size:11px;background:var(--bg-tertiary);padding:1px 5px;border-radius:4px;">.env</code> file:</div>
+            <pre id="ob-env-hint" style="font-size:11px;background:var(--bg-tertiary);border:0.5px solid var(--border-tertiary);border-radius:var(--radius-md);padding:12px;overflow-x:auto;color:var(--text-primary);line-height:1.7;"></pre>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:8px;">Restart the server after updating <code style="font-size:10px;background:var(--bg-tertiary);padding:1px 4px;border-radius:3px;">.env</code> to activate live mode.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Requirements card -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header"><span class="card-title">Required Graph API permissions</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Policy.Read.All</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Read all conditional access policies</div>
+          </div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Policy.ReadWrite.ConditionalAccess</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Create and modify CA policies</div>
+          </div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Organization.Read.All</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Read tenant organisation details</div>
+          </div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Calendars.ReadWrite</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Required only for Outlook calendar sync</div>
+          </div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">AuditLog.Read.All</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Read sign-in and audit log events</div>
+          </div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Application permissions</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">All permissions must be application type, with admin consent granted</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN ===== -->
+    <div class="content hidden admin-only" id="page-admin">
+      <div class="row2" style="grid-template-columns:1fr 1fr;">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Access model</span></div>
+          <div id="adminAuthSummary" style="font-size:12px;color:var(--text-secondary);line-height:1.6;">Loading access modelÃ¢â‚¬Â¦</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Role mapping</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="health-row"><span class="status-dot dot-green"></span><span style="font-size:12px;flex:1;">Admin group IDs</span><span id="adminGroupCount" class="pill pill-purple">0</span></div>
+            <div class="health-row"><span class="status-dot dot-green"></span><span style="font-size:12px;flex:1;">Analyst group IDs</span><span id="analystGroupCount" class="pill pill-blue">0</span></div>
+            <div class="health-row"><span class="status-dot dot-amber"></span><span style="font-size:12px;flex:1;">Group enforcement</span><span id="adminGroupPolicy" class="pill pill-amber">Unknown</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header"><span class="card-title">Admin-only setup actions</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Tenant onboarding</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Validate app registration and prepare live tenant settings.</div>
+          </div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">RBAC membership</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Grant or revoke access by adding users to Entra security groups.</div>
+          </div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">FQDN & SSO</div>
+            <div style="font-size:11px;color:var(--text-tertiary);">Bind HTTPS endpoint and configure redirect URIs for Microsoft login.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header"><span class="card-title">User provisioning (local directory)</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><label class="form-label">Display name</label><input id="admin-user-name" class="form-input" placeholder="Alex Morgan"></div>
+          <div><label class="form-label">Email</label><input id="admin-user-email" class="form-input" placeholder="alex@kontoso.com"></div>
+          <div><label class="form-label">Access group</label><select id="admin-user-group" class="form-input"><option value="analysts">Analysts</option><option value="admins">Admins</option></select></div>
+          <div><label class="form-label">Authentication mode</label><select id="admin-user-auth-mode" class="form-input"><option value="sso">SSO only</option><option value="local">Local credentials only</option><option value="either">SSO or local credentials</option></select></div>
+          <div style="grid-column:1 / span 2;"><label class="form-label">Password (required for local/either)</label><input id="admin-user-password" class="form-input" type="password" placeholder="Set initial password"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+          <button class="btn btn-primary" onclick="createAdminUser()">Add user</button>
+          <button class="btn" onclick="loadAdminUsers()">Refresh user list</button>
+          <span id="admin-user-message" style="font-size:11px;color:var(--text-tertiary);"></span>
+        </div>
+        <div id="admin-user-policy" style="margin-top:8px;font-size:11px;color:var(--text-tertiary);"></div>
+        <div style="margin-top:14px;border:0.5px solid var(--border-tertiary);border-radius:var(--radius-md);overflow:hidden;">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Group</th><th>Auth mode</th><th>Status</th><th>Failed attempts</th><th>Lock</th><th>Reset</th><th>Last login</th><th>Actions</th></tr></thead>
+            <tbody id="adminUserTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- NEW POLICY MODAL -->
+<div class="modal-bg hidden" id="newPolicyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New conditional access policy</span>
+      <button class="modal-close" onclick="closeModal('newPolicyModal')">Ã—</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab(this,'pTab1')">Basics</div>
+        <div class="tab" onclick="switchTab(this,'pTab2')">Conditions</div>
+        <div class="tab" onclick="switchTab(this,'pTab3')">Grant / Block</div>
+        <div class="tab" onclick="switchTab(this,'pTab4')">Schedule</div>
+      </div>
+      <div id="pTab1">
+        <div class="form-row"><label class="form-label">Policy name</label><input id="newPolicyName" class="form-input" placeholder="e.g. Require MFA for all users"></div>
+        <div class="form-row"><label class="form-label">Tenant</label><select class="form-input"><option>Contoso Ltd</option><option>Fabrikam Inc</option><option>Northwind Azure</option><option>Alpine Corp</option><option>Woodgrove Bank</option><option>Tailspin Toys</option></select></div>
+        <div class="form-row"><label class="form-label">Policy type</label><select class="form-input"><option>Grant (require MFA, compliant device, etc.)</option><option>Block (block access)</option><option>Session (limit session controls)</option></select></div>
+        <div class="form-row"><label class="form-label">Initial state</label><select id="newPolicyInitialState" class="form-input"><option value="enabledForReportingButNotEnforced">Report-only (no enforcement, monitoring only)</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></div>
+      </div>
+      <div id="pTab2" class="hidden">
+        <div class="form-row"><label class="form-label">Users / groups</label><select class="form-input"><option>All users</option><option>Selected groups</option><option>Admin roles only</option><option>Guest users</option></select></div>
+        <div class="form-row"><label class="form-label">Cloud apps</label><select class="form-input"><option>All cloud apps</option><option>Office 365</option><option>Azure Management</option><option>Selected apps</option></select></div>
+        <div class="form-row"><label class="form-label">Locations</label><select class="form-input"><option>Any location</option><option>All trusted locations</option><option>Selected countries / regions</option><option>All locations except trusted</option></select></div>
+        <div class="form-row"><label class="form-label">Device platforms</label><select class="form-input"><option>Any device</option><option>Windows only</option><option>iOS and Android</option><option>macOS</option><option>Select platformsâ€¦</option></select></div>
+        <div class="form-row"><label class="form-label">Client apps</label><select class="form-input"><option>Browser + mobile apps + desktop clients</option><option>Browser only</option><option>Legacy authentication clients</option></select></div>
+      </div>
+      <div id="pTab3" class="hidden">
+        <div class="form-row"><label class="form-label">Access control</label><select class="form-input"><option>Grant access</option><option>Block access</option></select></div>
+        <div class="form-row">
+          <label class="form-label">Require (grant controls)</label>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+            <label class="form-check"><input type="checkbox" checked> Require multi-factor authentication</label>
+            <label class="form-check"><input type="checkbox"> Require compliant device (Intune)</label>
+            <label class="form-check"><input type="checkbox"> Require hybrid Azure AD join</label>
+            <label class="form-check"><input type="checkbox"> Require approved client app</label>
+            <label class="form-check"><input type="checkbox"> Require app protection policy</label>
+          </div>
+        </div>
+        <div class="form-row"><label class="form-label">Multiple controls</label><select class="form-input"><option>Require all selected controls</option><option>Require one of the selected controls</option></select></div>
+      </div>
+      <div id="pTab4" class="hidden">
+        <div class="form-row">
+          <label class="form-label">Enable scheduling?</label>
+          <select class="form-input" id="scheduleType" onchange="toggleScheduleFields()">
+            <option value="">No schedule â€” managed manually</option>
+            <option value="once">One-time window</option>
+            <option value="recurring">Recurring schedule</option>
+          </select>
+        </div>
+        <div id="scheduleFields" class="hidden">
+          <div class="form-row-2">
+            <div><label class="form-label">Start date / time</label><input type="datetime-local" class="form-input"></div>
+            <div><label class="form-label">End date / time</label><input type="datetime-local" class="form-input"></div>
+          </div>
+          <div class="form-row" id="recurringOpts" class="hidden">
+            <label class="form-label">Recurrence pattern</label>
+            <select class="form-input"><option>Every weekday (Monâ€“Fri)</option><option>Weekly on selected days</option><option>Monthly (same date)</option><option>Customâ€¦</option></select>
+          </div>
+          <div class="form-row"><label class="form-label">Notify on trigger</label><input class="form-input" placeholder="admin@yourmspdomain.com"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('newPolicyModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="createApiPolicy()">Create policy</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRAVEL MODAL -->
+<div class="modal-bg hidden" id="travelModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New travel access rule</span>
+      <button class="modal-close" onclick="closeModal('travelModal')">Ã—</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">Tenant</label><select class="form-input"><option>Contoso Ltd</option><option>Fabrikam Inc</option><option>Northwind Azure</option><option>Alpine Corp</option><option>Woodgrove Bank</option><option>Tailspin Toys</option></select></div>
+      <div class="form-row"><label class="form-label">User</label><input class="form-input" placeholder="Search by name or emailâ€¦"></div>
+      <div class="form-row-2">
+        <div><label class="form-label">Departure date</label><input type="date" class="form-input"></div>
+        <div><label class="form-label">Return date</label><input type="date" class="form-input"></div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Travel destination(s)</label>
+        <div class="country-grid">
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡ºðŸ‡¸ USA</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡©ðŸ‡ª Germany</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡«ðŸ‡· France</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡ªðŸ‡¸ Spain</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡¦ðŸ‡ª UAE</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡¸ðŸ‡¬ Singapore</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡¯ðŸ‡µ Japan</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡¦ðŸ‡º Australia</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡®ðŸ‡³ India</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡§ðŸ‡· Brazil</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡¨ðŸ‡¦ Canada</div>
+          <div class="country-opt" onclick="this.classList.toggle('selected')">ðŸ‡¿ðŸ‡¦ South Africa</div>
+        </div>
+      </div>
+      <div class="form-row"><label class="form-label">Access level</label><select class="form-input"><option>Standard (MFA required + compliant device)</option><option>Restricted (MFA + manager approval)</option><option>Full access (trusted travel â€” executive)</option></select></div>
+      <div class="form-row"><label class="form-label">Auto-extend on return delay?</label><select class="form-input"><option>No â€” expire as scheduled</option><option>Extend by 24 hours (notify admin)</option><option>Extend by 48 hours (notify admin)</option></select></div>
+      <div class="form-row"><label class="form-label">Notifications</label><select class="form-input"><option>Email user and MSP admin on activation &amp; expiry</option><option>Email MSP admin only</option><option>No notifications</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('travelModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('travelModal')">Create travel rule</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW TENANT MODAL -->
+<div class="modal-bg hidden" id="newTenantModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add new tenant</span>
+      <button class="modal-close" onclick="closeModal('newTenantModal')">Ã—</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-banner">
+        <span>â„¹</span>
+        <span>Register an Azure App Registration in the tenant with <strong>Policy.Read.All</strong> and <strong>Policy.ReadWrite.ConditionalAccess</strong> Graph API permissions, then paste the credentials below.</span>
+      </div>
+      <div class="form-row"><label class="form-label">Organisation name</label><input class="form-input" placeholder="e.g. Acme Corporation"></div>
+      <div class="form-row"><label class="form-label">Primary domain</label><input class="form-input" placeholder="acme.onmicrosoft.com"></div>
+      <div class="form-row"><label class="form-label">Azure tenant ID</label><input class="form-input" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:monospace;font-size:12px;"></div>
+      <div class="form-row"><label class="form-label">App (client) ID</label><input class="form-input" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:monospace;font-size:12px;"></div>
+      <div class="form-row"><label class="form-label">Client secret value</label><input type="password" class="form-input" placeholder="Paste client secret valueâ€¦"></div>
+      <div class="form-row-2">
+        <div><label class="form-label">Service tier</label><select class="form-input"><option>Standard</option><option>Premium</option><option>Enterprise</option></select></div>
+        <div><label class="form-label">Primary contact email</label><input class="form-input" placeholder="it@acme.com"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('newTenantModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('newTenantModal')">Connect tenant</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULE MODAL -->
+<div class="modal-bg hidden" id="scheduleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Schedule a policy change</span>
+      <button class="modal-close" onclick="closeModal('scheduleModal')">Ã—</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">Tenant</label><select class="form-input"><option>Contoso Ltd</option><option>Fabrikam Inc</option><option>Northwind Azure</option><option>Alpine Corp</option><option>Woodgrove Bank</option><option>Tailspin Toys</option></select></div>
+      <div class="form-row"><label class="form-label">Policy</label><select class="form-input"><option>Require MFA â€” all users</option><option>Block legacy authentication</option><option>Weekend lockdown</option><option>Admin MFA enforcement</option></select></div>
+      <div class="form-row"><label class="form-label">Action</label><select class="form-input"><option>Enable policy</option><option>Disable policy</option><option>Switch to report-only</option></select></div>
+      <div class="form-row-2">
+        <div><label class="form-label">Run at</label><input type="datetime-local" class="form-input"></div>
+        <div><label class="form-label">Repeat</label><select class="form-input"><option>Once only</option><option>Daily</option><option>Weekly</option><option>Monthly</option></select></div>
+      </div>
+      <div class="form-row"><label class="form-label">Notify on completion</label><input class="form-input" placeholder="admin@yourmspdomain.com"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('scheduleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('scheduleModal')">Save schedule</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TENANTS = [
+  { name:'Contoso Ltd', domain:'contoso.onmicrosoft.com', bg:'#e6f1fb', color:'#185fa5', initials:'CO', policies:8, travel:2, tier:'Enterprise', status:'Healthy' },
+  { name:'Fabrikam Inc', domain:'fabrikam.onmicrosoft.com', bg:'#eaf3de', color:'#3b6d11', initials:'FA', policies:6, travel:1, tier:'Premium', status:'Healthy' },
+  { name:'Northwind Azure', domain:'northwind.onmicrosoft.com', bg:'#faeeda', color:'#854f0b', initials:'NA', policies:5, travel:0, tier:'Standard', status:'Warning' },
+  { name:'Alpine Corp', domain:'alpinecorp.onmicrosoft.com', bg:'#eeedfe', color:'#3c3489', initials:'AC', policies:7, travel:3, tier:'Premium', status:'Healthy' },
+  { name:'Woodgrove Bank', domain:'woodgrove.onmicrosoft.com', bg:'#e1f5ee', color:'#0f6e56', initials:'WB', policies:5, travel:0, tier:'Enterprise', status:'Healthy' },
+  { name:'Tailspin Toys', domain:'tailspin.onmicrosoft.com', bg:'#fcebeb', color:'#a32d2d', initials:'TT', policies:3, travel:1, tier:'Standard', status:'Alert' },
+];
+
+const POLICIES = [
+  { name:'Require MFA â€” all users', tenant:'Contoso Ltd', type:'Grant', status:'Enabled', schedule:'Always on' },
+  { name:'Block legacy authentication', tenant:'Contoso Ltd', type:'Block', status:'Enabled', schedule:'Always on' },
+  { name:'Travel: APAC region (Sarah M)', tenant:'Contoso Ltd', type:'Travel', status:'Active', schedule:'Expiring 6h' },
+  { name:'Compliant device required', tenant:'Fabrikam Inc', type:'Grant', status:'Report-only', schedule:'Always on' },
+  { name:'Admin MFA enforcement', tenant:'Fabrikam Inc', type:'Grant', status:'Enabled', schedule:'Always on' },
+  { name:'Block legacy auth', tenant:'Northwind Azure', type:'Block', status:'Review', schedule:'Always on' },
+  { name:'Trusted locations policy', tenant:'Northwind Azure', type:'Block', status:'Enabled', schedule:'Always on' },
+  { name:'Weekend lockdown', tenant:'Woodgrove Bank', type:'Block', status:'Enabled', schedule:'âŸ³ Weekly' },
+  { name:'After-hours MFA', tenant:'Woodgrove Bank', type:'Grant', status:'Enabled', schedule:'âŸ³ Daily' },
+  { name:'Admin MFA enforce', tenant:'Tailspin Toys', type:'Grant', status:'Disabled', schedule:'Always on' },
+  { name:'Travel: Dubai (Tom Reyes)', tenant:'Alpine Corp', type:'Travel', status:'Active', schedule:'Expiring 23h' },
+  { name:'Travel: Japan (Yuki Tanaka)', tenant:'Alpine Corp', type:'Travel', status:'Active', schedule:'Expires 22 Mar' },
+];
+
+const TRAVEL = [
+  { user:'Sarah Mitchell', email:'s.mitchell@contoso.com', tenant:'Contoso Ltd', from:'United Kingdom', to:'Spain', depart:'13 Mar 2026', ret:'20 Mar 2026', progress:20, status:'Active' },
+  { user:'Tom Reyes', email:'t.reyes@alpinecorp.com', tenant:'Alpine Corp', from:'United Kingdom', to:'UAE (Dubai)', depart:'10 Mar 2026', ret:'14 Mar 2026', progress:88, status:'Expiring' },
+  { user:'Yuki Tanaka', email:'y.tanaka@alpinecorp.com', tenant:'Alpine Corp', from:'United Kingdom', to:'Japan', depart:'12 Mar 2026', ret:'22 Mar 2026', progress:12, status:'Active' },
+  { user:'Aisha Okonkwo', email:'a.okonkwo@fabrikam.com', tenant:'Fabrikam Inc', from:'United Kingdom', to:'Nigeria', depart:'08 Mar 2026', ret:'15 Mar 2026', progress:76, status:'Expiring' },
+  { user:'David Park', email:'d.park@tailspin.com', tenant:'Tailspin Toys', from:'United Kingdom', to:'South Korea', depart:'15 Mar 2026', ret:'19 Mar 2026', progress:0, status:'Scheduled' },
+];
+
+let currentSession = null;
+let isAdminUser = false;
+let adminUsers = [];
+const nativeFetch = window.fetch.bind(window);
+
+window.fetch = async (...args) => {
+  const res = await nativeFetch(...args);
+  if (res.status === 401) {
+    window.location.href = '/login';
+    throw new Error('Session expired');
+  }
+  if (res.status === 403) {
+    try {
+      const data = await res.clone().json();
+      if (data && data.error && typeof data.error === 'object' && data.error.code === 'password_reset_required') {
+        window.location.href = '/login?reset=required';
+        throw new Error('Password reset required');
+      }
+    } catch (_error) {
+    }
+  }
+  return res;
+};
+
+function initialsFromName(name) {
+  return String(name || '')
+    .split(' ')
+    .map((part) => part.trim()[0] || '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'NA';
+}
+
+function applyRoleVisibility() {
+  document.querySelectorAll('.admin-only').forEach((el) => {
+    el.classList.toggle('hidden', !isAdminUser);
+  });
+}
+
+function getRoleLabel(roles) {
+  if (Array.isArray(roles) && roles.includes('admin')) return 'MSP Administrator';
+  return 'Service Desk Analyst';
+}
+
+async function loadSessionContext() {
+  try {
+    const response = await fetch('/api/session');
+    const payload = await response.json();
+    const user = payload.user || {};
+    currentSession = user;
+    isAdminUser = Array.isArray(user.roles) && user.roles.includes('admin');
+
+    const name = user.name || user.email || 'Unknown User';
+    document.getElementById('userName').textContent = name;
+    document.getElementById('userRole').textContent = getRoleLabel(user.roles);
+    document.getElementById('userAvatar').textContent = initialsFromName(name);
+    applyRoleVisibility();
+  } catch (error) {
+    window.location.href = '/login';
+  }
+}
+
+async function signOut() {
+  try {
+    await fetch('/auth/logout', { method: 'POST' });
+  } finally {
+    window.location.href = '/login';
+  }
+}
+
+
+function statusPill(s) {
+  const map = {
+    Healthy:'pill-green', Warning:'pill-amber', Alert:'pill-red',
+    Active:'pill-green', Expiring:'pill-amber', Scheduled:'pill-blue',
+    Disabled:'pill-red', Enabled:'pill-green', 'Report-only':'pill-purple', Review:'pill-amber', 'Always on':'pill-gray',
+    active:'pill-green', expiring:'pill-amber', scheduled:'pill-blue',
+    completed:'pill-gray', cancelled:'pill-red', disabled:'pill-red', enabled:'pill-green'
+  };
+  const label = s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  return `<span class="pill ${map[s]||'pill-gray'}">${label}</span>`;
+}
+
+function renderTenants() {
+  document.getElementById('tenantGrid').innerHTML = TENANTS.map(t => `
+    <div class="tenant-card">
+      <div class="tc-top">
+        <div class="tc-avatar" style="background:${t.bg};color:${t.color};">${t.initials}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="tc-name">${t.name}</div>
+          <div class="tc-domain">${t.domain}</div>
+        </div>
+        ${statusPill(t.status)}
+      </div>
+      <div class="tc-stats">
+        <div><div class="tc-stat-val">${t.policies}</div><div class="tc-stat-label">policies</div></div>
+        <div><div class="tc-stat-val">${t.travel}</div><div class="tc-stat-label">travel rules</div></div>
+        <div><div style="font-size:11px;color:var(--text-tertiary);font-weight:500;">${t.tier}</div><div class="tc-stat-label">tier</div></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderPolicies() {
+  if (apiPolicies) { renderApiPolicies(); return; }
+  const search = (document.getElementById('policySearch')||{value:''}).value.toLowerCase();
+  const tenant = (document.getElementById('policyTenantFilter')||{value:''}).value;
+  const rows = POLICIES.filter(p => (!search || p.name.toLowerCase().includes(search) || p.tenant.toLowerCase().includes(search)) && (!tenant || p.tenant === tenant));
+  const typeMap = { Grant:'pill-green', Block:'pill-red', Travel:'pill-blue', Session:'pill-purple' };
+  document.getElementById('policyTableBody').innerHTML = rows.map(p => `<tr>
+    <td style="font-weight:500;">${p.name}</td>
+    <td style="font-size:11px;color:var(--text-tertiary);">${p.tenant}</td>
+    <td>${statusPill(p.status)}</td>
+    <td><span class="pill ${typeMap[p.type]||'pill-gray'}">${p.type}</span></td>
+    <td style="font-size:11px;color:var(--text-tertiary);">${p.schedule}</td>
+    <td><div class="action-btns"><button class="btn btn-sm">Edit</button><button class="btn btn-sm">Toggle</button></div></td>
+  </tr>`).join('');
+}
+
+function renderApiPolicies() {
+  if (!apiPolicies) return;
+  const search = (document.getElementById('policySearch')||{value:''}).value.toLowerCase();
+  const rows = apiPolicies.filter(p => !search || p.name.toLowerCase().includes(search));
+  const stateNext = { enabled:'disabled', disabled:'enabledForReportingButNotEnforced', enabledForReportingButNotEnforced:'enabled' };
+  document.getElementById('policyTableBody').innerHTML = rows.map(p => `<tr>
+    <td style="font-weight:500;">${p.name}</td>
+    <td style="font-size:11px;color:var(--text-tertiary);">${p.id}</td>
+    <td>${statusPill(p.state)}</td>
+    <td><span class="pill pill-gray">${p.enforcementMode}</span></td>
+    <td style="font-size:11px;color:var(--text-tertiary);">${p.modifiedDateTime ? new Date(p.modifiedDateTime).toLocaleDateString('en-GB') : 'â€”'}</td>
+    <td><div class="action-btns">
+      <button class="btn btn-sm" onclick="togglePolicyState('${p.id}','${p.state}')">â†’ ${stateNext[p.state]||'toggle'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteApiPolicy('${p.id}')">Delete</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+async function loadPoliciesPage() {
+  try {
+    const res = await fetch('/api/policies');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.policies)) {
+        apiPolicies = data.policies;
+        renderApiPolicies();
+        return;
+      }
+    }
+  } catch (_) {}
+  renderPolicies();
+}
+
+async function togglePolicyState(id, currentState) {
+  const next = { enabled:'disabled', disabled:'enabledForReportingButNotEnforced', enabledForReportingButNotEnforced:'enabled' }[currentState] || 'disabled';
+  try {
+    const res = await fetch(`/api/policies/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state: next })
+    });
+    const data = await res.json();
+    if (!data.ok) { alert(data.error || 'Failed to update policy'); return; }
+    await loadPoliciesPage();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function deleteApiPolicy(id) {
+  if (!confirm('Delete this policy? This action cannot be undone in live mode.')) return;
+  try {
+    const res = await fetch(`/api/policies/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.ok) { alert(data.error || 'Failed to delete policy'); return; }
+    await loadPoliciesPage();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function createApiPolicy() {
+  const nameEl = document.getElementById('newPolicyName');
+  const stateEl = document.getElementById('newPolicyInitialState');
+  const displayName = (nameEl && nameEl.value.trim()) || '';
+  const state = (stateEl && stateEl.value) || 'disabled';
+  if (!displayName) { alert('Policy name is required'); return; }
+  try {
+    const res = await fetch('/api/policies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ displayName, state })
+    });
+    const data = await res.json();
+    if (!data.ok) { alert(data.error || 'Failed to create policy'); return; }
+    closeModal('newPolicyModal');
+    if (nameEl) nameEl.value = '';
+    await loadPoliciesPage();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+let apiPolicies = null;
+let apiTravelRules = null;
+
+function fmtDate(iso) {
+  return new Date(iso + 'T00:00:00Z').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function travelBarColor(status) {
+  return { active:'#185fa5', expiring:'#ba7517', scheduled:'#639922', completed:'#888780', cancelled:'#e24b4a' }[status] || '#185fa5';
+}
+
+function renderTravelCard(r) {
+  const initials = (r.userName || r.userEmail || '?').split(' ').map(n => n[0]).toUpperCase().join('').slice(0,2);
+  const dest = Array.isArray(r.toCountries) ? r.toCountries.join(', ') : r.toCountries || '';
+  const progress = r.progressPct !== undefined ? r.progressPct : 0;
+  const isDone = r.status === 'completed' || r.status === 'cancelled';
+  const extendBtn = isDone ? '' : `<button class="btn btn-sm" onclick="extendRule('${r.id}')">Extend</button>`;
+  const endBtn = isDone ? '' : `<button class="btn btn-sm btn-danger" onclick="cancelRule('${r.id}')">End</button>`;
+  return `
+    <div class="travel-card" id="tcard-${r.id}">
+      <div class="tr-header">
+        <div class="tr-avatar">${initials}</div>
+        <div class="tr-user" style="flex:1;">
+          <div class="tr-name">${r.userName || r.userEmail}</div>
+          <div class="tr-sub">${r.tenantId} Â· ${r.userEmail}</div>
+        </div>
+        ${statusPill(r.status)}
+        <div class="action-btns" style="margin-left:8px;">${extendBtn}${endBtn}</div>
+      </div>
+      <div class="tr-route">
+        <span>${r.fromCountry || 'â€”'}</span>
+        <span style="color:var(--text-tertiary);margin:0 4px;">â†’</span>
+        <strong style="color:var(--text-primary);">${dest}</strong>
+      </div>
+      <div class="tr-dates">
+        <div><div class="tr-date-label">Departure</div><div class="tr-date-val">${fmtDate(r.departureDate)}</div></div>
+        <div><div class="tr-date-label">Return</div><div class="tr-date-val">${fmtDate(r.returnDate)}</div></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${progress}%;background:${travelBarColor(r.status)};"></div></div>
+      <div class="progress-label">${progress}% of travel window elapsed</div>
+    </div>`;
+}
+
+function renderTravelStatic() {
+  const barColors = { Active:'#185fa5', Expiring:'#ba7517', Scheduled:'#639922' };
+  document.getElementById('travelList').innerHTML = TRAVEL.map(r => `
+    <div class="travel-card">
+      <div class="tr-header">
+        <div class="tr-avatar">${r.user.split(' ').map(n=>n[0]).join('')}</div>
+        <div class="tr-user" style="flex:1;">
+          <div class="tr-name">${r.user}</div>
+          <div class="tr-sub">${r.tenant} Â· ${r.email}</div>
+        </div>
+        ${statusPill(r.status)}
+        <div class="action-btns" style="margin-left:8px;">
+          <button class="btn btn-sm">Extend</button>
+          <button class="btn btn-sm btn-danger">End</button>
+        </div>
+      </div>
+      <div class="tr-route">
+        <span>${r.from}</span>
+        <span style="color:var(--text-tertiary);margin:0 4px;">â†’</span>
+        <strong style="color:var(--text-primary);">${r.to}</strong>
+      </div>
+      <div class="tr-dates">
+        <div><div class="tr-date-label">Departure</div><div class="tr-date-val">${r.depart}</div></div>
+        <div><div class="tr-date-label">Return</div><div class="tr-date-val">${r.ret}</div></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${r.progress}%;background:${barColors[r.status]||'#185fa5'};"></div></div>
+      <div class="progress-label">${r.progress}% of travel window elapsed</div>
+    </div>`).join('');
+}
+
+function renderTravel() {
+  if (apiTravelRules) {
+    document.getElementById('travelList').innerHTML = apiTravelRules.map(renderTravelCard).join('');
+  } else {
+    renderTravelStatic();
+  }
+}
+
+async function loadTravelPage() {
+  try {
+    const res = await fetch('/api/travel');
+    if (res.ok) {
+      const data = await res.json();
+      apiTravelRules = data.rules || null;
+    }
+  } catch (_) { /* fall back to static */ }
+  renderTravel();
+}
+
+async function cancelRule(id) {
+  if (!confirm('End this travel rule?')) return;
+  try {
+    const res = await fetch(`/api/travel/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.ok) { alert(data.error || 'Failed to cancel rule'); return; }
+    await loadTravelPage();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function extendRule(id) {
+  const newDate = prompt('New return date (YYYY-MM-DD):');
+  if (!newDate) return;
+  try {
+    const res = await fetch(`/api/travel/${id}/extend`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ returnDate: newDate })
+    });
+    const data = await res.json();
+    if (!data.ok) { alert(data.error || 'Failed to extend rule'); return; }
+    await loadTravelPage();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function runTravelTick() {
+  const btn = document.getElementById('tickBtn');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/api/travel/tick', { method: 'POST' });
+    const data = await res.json();
+    alert(`Tick complete (${data.mode} mode)\nActivated: ${data.activatedCount}  Completed: ${data.completedCount}  Errors: ${data.errorCount}`);
+    await loadTravelPage();
+  } catch (e) {
+    alert('Tick error: ' + e.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function loadAdminPage() {
+  if (!isAdminUser) {
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/admin/access-model');
+    const data = await res.json();
+    if (!data.ok) {
+      throw new Error(getApiErrorMessage(data, 'Unable to load admin access model'));
+    }
+
+    const auth = data.auth || {};
+    const rbac = data.rbac || {};
+    const deployment = data.deployment || {};
+    const providers = auth.providers || {};
+    const hardening = auth.hardening || {};
+    const sso = providers.sso || {};
+    const local = providers.local || {};
+    document.getElementById('adminAuthSummary').innerHTML = [
+      `<div><strong>Authentication:</strong> ${auth.enabled ? 'Enabled' : 'Disabled'}</div>`,
+      `<div><strong>SSO:</strong> ${sso.enabled ? (sso.configured ? 'Enabled' : 'Enabled (incomplete)') : 'Disabled'}</div>`,
+      `<div><strong>Local login:</strong> ${local.enabled ? 'Enabled' : 'Disabled'}</div>`,
+      `<div><strong>Live Graph:</strong> ${deployment.liveGraphEnabled ? 'Enabled' : 'Demo mode'}</div>`,
+      `<div><strong>Calendar integration:</strong> ${deployment.calendarIntegrationEnabled ? 'Enabled' : 'Disabled'}</div>`,
+      `<div style="margin-top:6px;color:var(--text-tertiary);">${auth.reason || ''}</div>`
+    ].join('');
+    document.getElementById('adminGroupCount').textContent = (rbac.adminGroupIds || []).length;
+    document.getElementById('analystGroupCount').textContent = (rbac.analystGroupIds || []).length;
+    document.getElementById('adminGroupPolicy').textContent = rbac.requireGroups ? 'Required' : 'Optional';
+    const lockout = hardening.lockout || {};
+    const passwordPolicy = hardening.passwordPolicy || {};
+    document.getElementById('admin-user-policy').textContent = `Password policy: min ${passwordPolicy.minLength || 12} chars with upper/lower/number/symbol. Lockout: ${lockout.maxAttempts || 5} failed attempts in ${lockout.windowMinutes || 15} minutes, lock ${lockout.lockMinutes || 15} minutes.`;
+  } catch (error) {
+    document.getElementById('adminAuthSummary').textContent = `Unable to load admin settings: ${error.message}`;
+    const policyEl = document.getElementById('admin-user-policy');
+    if (policyEl) {
+      policyEl.textContent = '';
+    }
+  }
+
+  await loadAdminUsers();
+}
+
+function formatLastLogin(value) {
+  if (!value) return 'Never';
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return 'Unknown';
+  return dt.toLocaleString('en-GB');
+}
+
+function getApiErrorMessage(payload, fallback) {
+  if (!payload) return fallback;
+  if (payload.error && typeof payload.error === 'object') {
+    return payload.error.message || fallback;
+  }
+  if (typeof payload.error === 'string') {
+    return payload.error;
+  }
+  return fallback;
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function domSafeId(value) {
+  return String(value || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+function renderAdminUsers() {
+  const body = document.getElementById('adminUserTableBody');
+  if (!body) return;
+
+  if (!adminUsers.length) {
+    body.innerHTML = '<tr><td colspan="10" style="font-size:12px;color:var(--text-tertiary);">No users provisioned yet. Add your first user above.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = adminUsers.map((user) => {
+    const safeRowId = domSafeId(user.id);
+    const group = Array.isArray(user.groups) && user.groups.includes('admins') ? 'admins' : 'analysts';
+    const statusClass = user.status === 'active' ? 'pill-green' : 'pill-red';
+    const statusLabel = user.status === 'active' ? 'Active' : 'Disabled';
+    const toggleLabel = user.status === 'active' ? 'Disable' : 'Enable';
+    const nextStatus = user.status === 'active' ? 'disabled' : 'active';
+    const failedCount = Number.isFinite(Number(user.failedLoginCount)) ? Number(user.failedLoginCount) : 0;
+    const lockedUntil = user.lockedUntil ? formatLastLogin(user.lockedUntil) : 'Not locked';
+    const resetLabel = user.mustResetPassword ? '<span class="pill pill-amber">Required</span>' : '<span class="pill pill-green">No</span>';
+    return `<tr>
+      <td style="font-weight:500;">${escapeHtml(user.name)}</td>
+      <td style="font-size:11px;color:var(--text-tertiary);">${escapeHtml(user.email)}</td>
+      <td>
+        <select id="admin-group-${safeRowId}" class="form-input" style="font-size:11px;padding:5px 7px;">
+          <option value="analysts" ${group === 'analysts' ? 'selected' : ''}>Analysts</option>
+          <option value="admins" ${group === 'admins' ? 'selected' : ''}>Admins</option>
+        </select>
+      </td>
+      <td>
+        <select id="admin-auth-${safeRowId}" class="form-input" style="font-size:11px;padding:5px 7px;">
+          <option value="sso" ${user.authMode === 'sso' ? 'selected' : ''}>sso</option>
+          <option value="local" ${user.authMode === 'local' ? 'selected' : ''}>local</option>
+          <option value="either" ${user.authMode === 'either' ? 'selected' : ''}>either</option>
+        </select>
+      </td>
+      <td><span class="pill ${statusClass}">${statusLabel}</span></td>
+      <td style="font-size:11px;color:var(--text-tertiary);">${failedCount}</td>
+      <td style="font-size:11px;color:var(--text-tertiary);">${lockedUntil}</td>
+      <td>${resetLabel}</td>
+      <td style="font-size:11px;color:var(--text-tertiary);">${formatLastLogin(user.lastLoginAt)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-sm" onclick="saveAdminUserAccess('${user.id}','${safeRowId}')">Save</button>
+          <button class="btn btn-sm" onclick="toggleAdminUserStatus('${user.id}','${nextStatus}')">${toggleLabel}</button>
+          <button class="btn btn-sm" onclick="forceAdminUserReset('${user.id}')">Force reset</button>
+          <button class="btn btn-sm" onclick="issueAdminPasswordReset('${user.id}')">Reset password</button>
+          <button class="btn btn-sm" onclick="unlockAdminUser('${user.id}')">Unlock</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function setAdminMessage(message, isError = false) {
+  const target = document.getElementById('admin-user-message');
+  if (!target) return;
+  target.style.color = isError ? 'var(--text-danger)' : 'var(--text-tertiary)';
+  target.textContent = message;
+}
+
+async function loadAdminUsers() {
+  try {
+    const res = await fetch('/api/admin/users');
+    const data = await res.json();
+    if (!data.ok) {
+      throw new Error(getApiErrorMessage(data, 'Failed to load users'));
+    }
+    adminUsers = Array.isArray(data.users) ? data.users : [];
+    renderAdminUsers();
+  } catch (error) {
+    adminUsers = [];
+    renderAdminUsers();
+    setAdminMessage(error.message, true);
+  }
+}
+
+async function createAdminUser() {
+  const name = (document.getElementById('admin-user-name') || {}).value || '';
+  const email = (document.getElementById('admin-user-email') || {}).value || '';
+  const authMode = (document.getElementById('admin-user-auth-mode') || {}).value || 'sso';
+  const group = (document.getElementById('admin-user-group') || {}).value || 'analysts';
+  const password = (document.getElementById('admin-user-password') || {}).value || '';
+
+  setAdminMessage('Saving user...');
+  try {
+    const res = await fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        authMode,
+        groups: [group],
+        password
+      })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      throw new Error(getApiErrorMessage(data, 'Unable to add user'));
+    }
+
+    document.getElementById('admin-user-name').value = '';
+    document.getElementById('admin-user-email').value = '';
+    document.getElementById('admin-user-password').value = '';
+    setAdminMessage(`User added: ${data.user.email}`);
+    await loadAdminUsers();
+  } catch (error) {
+    setAdminMessage(error.message, true);
+  }
+}
+
+async function saveAdminUserAccess(userId, safeRowId) {
+  const groupSelect = document.getElementById(`admin-group-${safeRowId}`);
+  const authSelect = document.getElementById(`admin-auth-${safeRowId}`);
+  if (!groupSelect || !authSelect) return;
+
+  setAdminMessage('Updating user...');
+  try {
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        groups: [groupSelect.value],
+        authMode: authSelect.value
+      })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      throw new Error(getApiErrorMessage(data, 'Unable to update user'));
+    }
+    setAdminMessage(`User ${data.user.email} updated.`);
+    await loadAdminUsers();
+  } catch (error) {
+    setAdminMessage(error.message, true);
+  }
+}
+
+async function toggleAdminUserStatus(userId, status) {
+  setAdminMessage('Updating user...');
+  try {
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      throw new Error(getApiErrorMessage(data, 'Unable to update user'));
+    }
+    setAdminMessage(`User ${data.user.email} updated.`);
+    await loadAdminUsers();
+  } catch (error) {
+    setAdminMessage(error.message, true);
+  }
+}
+
+async function forceAdminUserReset(userId) {
+  setAdminMessage('Marking user for password reset...');
+  try {
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mustResetPassword: true })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      throw new Error(getApiErrorMessage(data, 'Unable to force reset'));
+    }
+    setAdminMessage(`User ${data.user.email} now requires password reset.`);
+    await loadAdminUsers();
+  } catch (error) {
+    setAdminMessage(error.message, true);
+  }
+}
+
+async function unlockAdminUser(userId) {
+  setAdminMessage('Unlocking user...');
+  try {
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ unlock: true })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      throw new Error(getApiErrorMessage(data, 'Unable to unlock user'));
+    }
+    setAdminMessage(`User ${data.user.email} unlocked.`);
+    await loadAdminUsers();
+  } catch (error) {
+    setAdminMessage(error.message, true);
+  }
+}
+
+async function issueAdminPasswordReset(userId) {
+  const customPassword = prompt('Optional: set a temporary password now. Leave blank to auto-generate.');
+  if (customPassword === null) return;
+
+  setAdminMessage('Issuing temporary password...');
+  try {
+    const body = customPassword.trim()
+      ? { password: customPassword.trim(), mustResetPassword: true }
+      : { mustResetPassword: true };
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      throw new Error(getApiErrorMessage(data, 'Unable to reset password'));
+    }
+
+    const tempValue = data.temporaryPassword || customPassword.trim();
+    if (tempValue) {
+      alert(`Temporary password for ${data.user.email}: ${tempValue}`);
+    }
+    setAdminMessage(`Temporary password issued for ${data.user.email}.`);
+    await loadAdminUsers();
+  } catch (error) {
+    setAdminMessage(error.message, true);
+  }
+}
+function showPage(page) {
+  if ((page === 'onboarding' || page === 'admin') && !isAdminUser) {
+    page = 'dashboard';
+  }
+
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) pageEl.classList.remove('hidden');
+  const navEl = document.querySelector(`.nav-item[data-page="${page}"]`);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[page] || page;
+  document.getElementById('topbarActions').innerHTML = getPageActions(page);
+}
+
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+function toggleBtn(btn) { btn.classList.toggle('on'); btn.classList.toggle('off'); }
+
+function switchTab(tabEl, tabId) {
+  const modal = tabEl.closest('.modal-body');
+  modal.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  ['pTab1','pTab2','pTab3','pTab4'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+  document.getElementById(tabId).classList.remove('hidden');
+}
+
+function toggleScheduleFields() {
+  const val = document.getElementById('scheduleType').value;
+  document.getElementById('scheduleFields').classList.toggle('hidden', !val);
+}
+
+const PAGE_TITLES = { dashboard:'Dashboard', tenants:'Tenants', policies:'CA Policies', travel:'Travel Access', schedule:'Schedules', users:'Users & Groups', alerts:'Alerts & Logs', onboarding:'Live Setup', admin:'Admin' };
+const PAGE_ACTIONS = {
+  dashboard: '<button class="btn btn-primary" onclick="openModal(\'newPolicyModal\')">+ New Policy</button>',
+  tenants: '<button class="btn btn-primary" onclick="openModal(\'newTenantModal\')">+ Add Tenant</button>',
+  policies: '<button class="btn btn-primary" onclick="openModal(\'newPolicyModal\')">+ New Policy</button>',
+  travel: '<button class="btn" onclick="runTravelTick()" id="tickBtn">Run Tick</button> <button class="btn btn-primary" onclick="openModal(\'travelModal\')">+ Travel Rule</button>',
+  schedule: '<button class="btn btn-primary" onclick="openModal(\'scheduleModal\')">+ Schedule Change</button>',
+  users: '<button class="btn">Export Users</button>',
+  alerts: '<button class="btn">Export CSV</button>',
+  onboarding: '',
+  admin: '<button class="btn btn-primary" onclick="showPage(\'onboarding\')">Open Live Setup</button>',
+};
+
+function getPageActions(page) {
+  if (!isAdminUser && (page === 'tenants' || page === 'onboarding' || page === 'admin')) {
+    return '';
+  }
+  return PAGE_ACTIONS[page] || '';
+}
+
+async function runOnboardingValidation() {
+  const tenantId = (document.getElementById('ob-tenantId')||{}).value || '';
+  const clientId = (document.getElementById('ob-clientId')||{}).value || '';
+  const clientSecret = (document.getElementById('ob-clientSecret')||{}).value || '';
+  const tenantName = (document.getElementById('ob-tenantName')||{}).value || '';
+  const domain = (document.getElementById('ob-domain')||{}).value || '';
+
+  const btn = document.getElementById('ob-validateBtn');
+  const spinner = document.getElementById('ob-spinner');
+  const resultsEl = document.getElementById('ob-results');
+
+  btn.disabled = true;
+  spinner.classList.remove('hidden');
+  resultsEl.style.display = 'block';
+
+  // Reset check dots
+  ['ob-check-fields-dot','ob-check-token-dot','ob-check-graph-dot','ob-check-org-dot'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.className = 'status-dot dot-amber'; }
+  });
+  document.getElementById('ob-error-row').classList.add('hidden');
+  document.getElementById('ob-env-block').classList.add('hidden');
+  document.getElementById('ob-result-badge').innerHTML = '';
+
+  let data;
+  try {
+    const res = await fetch('/api/onboarding/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenantId, clientId, clientSecret, tenantName, domain })
+    });
+    data = await res.json();
+  } catch (err) {
+    data = { ok: false, checks: {}, error: 'Network error: ' + err.message };
+  }
+
+  const checks = data.checks || {};
+  const dotClass = (v) => v ? 'status-dot dot-green' : 'status-dot dot-red';
+  if ('fieldsPresent' in checks) document.getElementById('ob-check-fields-dot').className = dotClass(checks.fieldsPresent);
+  if ('tokenAcquired' in checks) document.getElementById('ob-check-token-dot').className = dotClass(checks.tokenAcquired);
+  if ('graphReachable' in checks) document.getElementById('ob-check-graph-dot').className = dotClass(checks.graphReachable);
+  if ('orgReadable' in checks) document.getElementById('ob-check-org-dot').className = dotClass(checks.orgReadable);
+
+  const badgeEl = document.getElementById('ob-result-badge');
+  if (data.ok) {
+    badgeEl.innerHTML = '<span class="pill pill-green">All checks passed</span>';
+    const envBlock = document.getElementById('ob-env-block');
+    envBlock.classList.remove('hidden');
+    document.getElementById('ob-env-hint').textContent = data.envHint || '';
+  } else {
+    badgeEl.innerHTML = '<span class="pill pill-red">Validation failed</span>';
+    const errRow = document.getElementById('ob-error-row');
+    errRow.classList.remove('hidden');
+    errRow.textContent = data.error || 'Validation failed';
+  }
+
+  btn.disabled = false;
+  spinner.classList.add('hidden');
+}
+
+// Wire up nav items
+document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+  el.addEventListener('click', () => {
+    showPage(el.dataset.page);
+    if (el.dataset.page === 'policies') loadPoliciesPage();
+    if (el.dataset.page === 'travel') loadTravelPage();
+    if (el.dataset.page === 'admin') loadAdminPage();
+  });
+});
+
+// Close modals on background click
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if(e.target === bg) bg.classList.add('hidden'); });
+});
+
+async function initialiseApp() {
+  await loadSessionContext();
+  renderTenants();
+  renderPolicies();
+  renderTravel();
+  if (isAdminUser) {
+    loadAdminPage();
+  }
+}
+
+initialiseApp();
+</script>
+</body>
+</html>
+

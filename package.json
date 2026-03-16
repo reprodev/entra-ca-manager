@@ -1,0 +1,32 @@
+{
+  "name": "entra-ca-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multi-tenant Conditional Access management for MSP operations teams — demo-first, Graph API only.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/api/auth.js && node --check src/api/graphClient.js && node --check src/api/management.js && node --check src/api/onboarding.js && node --check src/api/policies.js && node --check src/api/policyMutations.js && node --check src/api/tenants.js && node --check src/api/schedule.js && node --check src/api/travelRules.js && node --check src/api/demoData.js && node --check src/api/runtimeConfig.js && node --check src/api/localUsers.js && node --check src/api/sessionAuth.js && node --check src/api/auditLog.js && node --check src/api/rateLimiter.js && node --check src/api/redisRuntime.js && node --check src/api/keyVaultSecrets.js && node --check scripts/e2e-policy-route-check.js && node --check scripts/e2e-demo-mode-check.js && node --check scripts/e2e-management-reminders-check.js && node --check scripts/e2e-calendar-sync-live-check.js && node --check scripts/e2e-onboarding-check.js && node --check scripts/e2e-calendar-dedup-check.js && node --check scripts/e2e-travel-check.js && node --check scripts/e2e-policy-crud-check.js && node --check scripts/e2e-auth-hardening-check.js && node --check scripts/verify-audit-log-chain.js",
+    "e2e:policies": "node scripts/e2e-policy-route-check.js",
+    "e2e:demo": "node scripts/e2e-demo-mode-check.js",
+    "e2e:management": "node scripts/e2e-management-reminders-check.js",
+    "e2e:onboarding": "node scripts/e2e-onboarding-check.js",
+    "e2e:calendar:live": "node scripts/e2e-calendar-sync-live-check.js",
+    "e2e:calendar:dedup": "node scripts/e2e-calendar-dedup-check.js",
+    "e2e:travel": "node scripts/e2e-travel-check.js",
+    "e2e:policy:crud": "node scripts/e2e-policy-crud-check.js",
+    "e2e:auth:hardening": "node scripts/e2e-auth-hardening-check.js",
+    "audit:verify": "node scripts/verify-audit-log-chain.js"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.4.1",
+    "@azure/keyvault-secrets": "^4.9.0",
+    "@azure/msal-node": "^3.8.0",
+    "redis": "^4.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
