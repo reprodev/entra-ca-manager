@@ -1,0 +1,37 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Entra CA Manager Wordmark</title>
+  <desc id="desc">Entra CA Manager logo with shield icon and product name.</desc>
+  <defs>
+    <linearGradient id="iconBg" x1="24" y1="20" x2="260" y2="260" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F2E6D"/>
+      <stop offset="1" stop-color="#0078D4"/>
+    </linearGradient>
+    <linearGradient id="shieldGlow" x1="80" y1="74" x2="206" y2="205" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#78D2FF"/>
+      <stop offset="1" stop-color="#E5F5FF"/>
+    </linearGradient>
+    <filter id="softShadow" x="10" y="14" width="286" height="286" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feOffset dy="6"/>
+      <feGaussianBlur stdDeviation="8"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0156863 0 0 0 0 0.113725 0 0 0 0 0.25098 0 0 0 0.28 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2_1" result="shape"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <rect x="30" y="24" width="246" height="246" rx="58" fill="url(#iconBg)"/>
+  </g>
+
+  <path d="M153 70C182 70 209 79 229 96V159C229 206 198 242 153 257C108 242 77 206 77 159V96C97 79 124 70 153 70Z" fill="url(#shieldGlow)" fill-opacity="0.2"/>
+  <path d="M153 83C177 83 200 91 217 105V157C217 197 192 230 153 243C114 230 89 197 89 157V105C106 91 129 83 153 83Z" stroke="#B7E5FF" stroke-opacity="0.72" stroke-width="5"/>
+  <circle cx="153" cy="157" r="49" stroke="#DDF4FF" stroke-width="6"/>
+  <path d="M134 154V140C134 129 142 121 153 121C164 121 172 129 172 140V154" stroke="#EAF8FF" stroke-width="7" stroke-linecap="round"/>
+  <rect x="126" y="150" width="54" height="50" rx="10" fill="#F3FBFF"/>
+  <circle cx="153" cy="171" r="6" fill="#0D4EA3"/>
+  <path d="M153 177V188" stroke="#0D4EA3" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M117 201L137 221L190 169" stroke="#6CF39C" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="328" y="135" fill="#0D224A" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="74" font-weight="700" letter-spacing="0.5">entra-ca-manager</text>
+  <text x="332" y="184" fill="#0E4EA2" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="31" font-weight="600" letter-spacing="1.8">Conditional Access Governance</text>
+</svg>

@@ -1,0 +1,37 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Entra CA Manager Logo</title>
+  <desc id="desc">Shield and lock emblem with a check mark for Conditional Access governance.</desc>
+  <defs>
+    <linearGradient id="bgGrad" x1="64" y1="48" x2="464" y2="464" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F2E6D"/>
+      <stop offset="1" stop-color="#0078D4"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="160" y1="140" x2="370" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#78D2FF"/>
+      <stop offset="1" stop-color="#E5F5FF"/>
+    </linearGradient>
+    <filter id="shadow" x="14" y="18" width="484" height="484" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feOffset dy="8"/>
+      <feGaussianBlur stdDeviation="12"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0156863 0 0 0 0 0.113725 0 0 0 0 0.25098 0 0 0 0.32 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <rect x="38" y="32" width="436" height="436" rx="104" fill="url(#bgGrad)"/>
+  </g>
+
+  <path d="M256 96C305 96 350 112 384 141V252C384 337 330 403 256 424C182 403 128 337 128 252V141C162 112 207 96 256 96Z" fill="url(#accentGrad)" fill-opacity="0.18"/>
+  <path d="M256 120C296 120 333 133 362 157V247C362 318 318 378 256 399C194 378 150 318 150 247V157C179 133 216 120 256 120Z" stroke="#B7E5FF" stroke-opacity="0.7" stroke-width="8"/>
+
+  <circle cx="256" cy="242" r="82" stroke="#DDF4FF" stroke-width="10"/>
+
+  <path d="M225 237V214C225 196 239 182 256 182C273 182 287 196 287 214V237" stroke="#EAF8FF" stroke-width="12" stroke-linecap="round"/>
+  <rect x="212" y="230" width="88" height="86" rx="18" fill="#F3FBFF"/>
+  <circle cx="256" cy="268" r="11" fill="#0D4EA3"/>
+  <path d="M256 279V296" stroke="#0D4EA3" stroke-width="8" stroke-linecap="round"/>
+
+  <path d="M196 320L233 357L319 271" stroke="#6CF39C" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
