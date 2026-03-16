@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/entra-ca-manager-wordmark.svg" alt="entra-ca-manager logo" width="760" />
+</p>
+
 # CA Manager - MSP Edition
 
 A multi-tenant Azure Conditional Access management platform scaffold for MSP operations teams.
