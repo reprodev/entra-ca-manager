@@ -6,6 +6,9 @@
 
 A multi-tenant Azure Conditional Access management platform scaffold for MSP operations teams.
 
+<img src="assets/Entra-CA-Manager01.png" alt="entra-ca-manager logo" width="760" />
+<img src="assets/Entra-CA-Manager04.png" alt="entra-ca-manager logo" width="760" />
+
 This repository is intentionally **demo-first** for whitelabel use:
 
 - no live tenant credentials required by default
