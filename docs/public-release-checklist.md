@@ -39,6 +39,6 @@ Use this quick checklist before changing the repository visibility to public.
 
 ## 5) Release handoff
 
-- [ ] Create PR from `dev` to `main` with validation output attached.
+- [ ] Create PR from your feature branch to `main` with validation output attached.
 - [ ] Add release notes summarizing demo mode, live mode, and calendar sync behavior.
 - [ ] Tag a release after merge (for example: `v0.1.0`).
