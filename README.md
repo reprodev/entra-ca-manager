@@ -291,6 +291,17 @@ To pin a deployment to a release instead of the moving `:latest` tag, replace it
 
 For a full container runbook, registry publishing notes, and hosted-image upgrade flow, see [`docs/docker-deployment-guide.md`](docs/docker-deployment-guide.md).
 
+### Option D: Windows RDS / Azure Virtual Desktop (RemoteApp)
+
+For MSP staff on Windows Remote Desktop Services or Azure Virtual Desktop, the app can be
+published as a RemoteApp shortcut using Edge in app mode — no installer or desktop packaging
+required. One shared Node.js service instance runs on the host; all RDS users connect to it
+through isolated Edge profiles.
+
+See [`docs/rds-remoteapp-deployment-guide.md`](docs/rds-remoteapp-deployment-guide.md) for the
+full walkthrough including NSSM service setup, RemoteApp publication, GPO/Intune distribution,
+and multi-user session isolation guidance.
+
 ### First sign-in
 
 The bootstrap admin is forced to reset its password on first sign-in before accessing any dashboard pages. Set the bootstrap credentials in your environment before first boot:
@@ -376,6 +387,7 @@ Important groups:
 - `docs/incident-response.md`
 - `docs/threat-model.md`
 - `docs/keyvault-rotation-runbook.md`
+- [`docs/rds-remoteapp-deployment-guide.md`](docs/rds-remoteapp-deployment-guide.md)
 - `graph-permissions.md`
 
 ---

@@ -2,9 +2,7 @@ name: CI Security Gate
 
 on:
   pull_request:
-    branches: [main, dev]
-  push:
-    branches: [dev]
+    branches: [main]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

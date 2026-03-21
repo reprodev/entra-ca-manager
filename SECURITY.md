@@ -2,12 +2,9 @@
 
 ## Supported versions
 
-This project is currently in active development on `dev`, with releases promoted to `main`.
+Releases are published from `main`. Feature work is done on short-lived branches and merged via PR.
 
-Security fixes are applied to:
-
-- latest `main` release
-- current `dev` branch
+Security fixes are applied to the latest `main` release.
 
 ## Reporting a vulnerability
 

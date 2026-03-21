@@ -211,15 +211,62 @@ Post-upgrade checks:
 
 ---
 
-## 7) GitHub Actions publishing and access
+## 7) Release operations and GHCR publishing
 
-- The repo publishes `ghcr.io/reprodev/entra-ca-manager:latest` on pushes to `main`.
-- Pushing a Git tag such as `v0.1.0` publishes the matching versioned image tag.
-- Each published build also gets an immutable `ghcr.io/reprodev/entra-ca-manager:sha-<shortsha>` tag.
-- Published images currently target `linux/amd64`.
-- Build provenance attestations and SBOM metadata are published with image artifacts.
-- To require manual approval before a new `latest` image is published, protect `main` in GitHub and require at least one PR review before merge.
-- To allow unauthenticated `docker pull` and Compose pulls, set the GHCR package visibility to public after the first publish. Otherwise, users must authenticate with `docker login ghcr.io`.
+### Tag model
+
+| Trigger | Tags produced | Notes |
+| --- | --- | --- |
+| Push to `main` | `latest`, `sha-<shortsha>` | `:latest` always tracks `main` HEAD |
+| Push a `v*` git tag | `v<version>`, `sha-<shortsha>` | Version tag mirrors the git tag exactly |
+
+All images currently target `linux/amd64`. Build provenance attestations and SBOM metadata are published with each image artifact.
+
+### When to push a release tag
+
+1. Merge the feature branch to `main` via PR (CI Security Gate must pass).
+2. Confirm the `latest` image published correctly (see verification steps below).
+3. Push a semver tag from `main` to trigger the versioned release:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Do not push tags from feature branches — the workflow only produces a clean version image when the tag points to a commit already on `main`.
+
+### Verifying published images
+
+After a `main` push or version tag push, confirm the expected tags are pullable:
+
+```bash
+# latest (from main push)
+docker pull ghcr.io/reprodev/entra-ca-manager:latest
+
+# version tag (from vX.Y.Z tag push)
+docker pull ghcr.io/reprodev/entra-ca-manager:v0.1.0
+
+# immutable SHA tag (from either trigger — use the short SHA from the commit or workflow run)
+docker pull ghcr.io/reprodev/entra-ca-manager:sha-c8b582f
+```
+
+To inspect the image manifest and confirm provenance/SBOM metadata is attached:
+
+```bash
+docker buildx imagetools inspect ghcr.io/reprodev/entra-ca-manager:latest
+```
+
+If the GHCR package is private, authenticate first:
+
+```bash
+docker login ghcr.io
+```
+
+To allow unauthenticated pulls, set the package visibility to **Public** in GitHub → Packages → Package settings after the first publish.
+
+### Branch protection and publish gate
+
+To prevent unreviewed code from publishing a new `:latest` image, enable branch protection on `main` (PR required, at least one review). The publish workflow will only run after merge.
 
 ---
 

@@ -41,4 +41,8 @@ Use this quick checklist before changing the repository visibility to public.
 
 - [ ] Create PR from your feature branch to `main` with validation output attached.
 - [ ] Add release notes summarizing demo mode, live mode, and calendar sync behavior.
-- [ ] Tag a release after merge (for example: `v0.1.0`).
+- [ ] After merge to `main`, confirm `ghcr.io/reprodev/entra-ca-manager:latest` is pullable.
+- [ ] After merge to `main`, confirm `ghcr.io/reprodev/entra-ca-manager:sha-<shortsha>` is pullable.
+- [ ] Push a semver tag from `main` to publish the versioned image (for example: `git tag v0.1.0 && git push origin v0.1.0`).
+- [ ] Confirm `ghcr.io/reprodev/entra-ca-manager:v0.1.0` is pullable after the tag workflow completes.
+- [ ] Run `docker buildx imagetools inspect ghcr.io/reprodev/entra-ca-manager:v0.1.0` to confirm provenance/SBOM metadata is present.
