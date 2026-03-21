@@ -7,8 +7,8 @@ Audience: MSP admins and platform engineers deploying `entra-ca-manager` in cont
 ## 1) Prerequisites
 
 - Docker Engine and Docker Compose plugin installed
+- Access to this repository
 - A prepared `.env` file with deployment values
-- Access to this repository only if you plan to build locally from source
 
 Optional but recommended for production:
 
@@ -18,8 +18,6 @@ Optional but recommended for production:
 ---
 
 ## 2) Quick start (single container)
-
-### Option A: build locally from the repository
 
 From the repository root:
 
@@ -39,94 +37,30 @@ Verify service health:
 curl http://127.0.0.1:3000/health
 ```
 
-### Option B: run the published GHCR image
-
-Use the published image when you want to deploy without cloning the repository:
-
-```bash
-docker pull ghcr.io/reprodev/entra-ca-manager:latest
-docker run --name entra-ca-manager --detach \
-  -p 3000:3000 \
-  --env-file .env \
-  -e NODE_ENV=production \
-  -v entra_ca_data:/app/data \
-  ghcr.io/reprodev/entra-ca-manager:latest
-```
-
-If the package is private, authenticate first:
-
-```bash
-docker login ghcr.io
-```
-
-Published GHCR images currently target `linux/amd64` and include provenance/SBOM metadata.
-
-To pin to a release instead of the moving `:latest` tag, use a published version tag such as `:v0.1.0`. Immutable `:sha-<shortsha>` tags are also published for commit-specific pinning.
-
 ---
 
-## 3) Docker Compose workflows
+## 3) Preferred local/prod workflow (Docker Compose)
 
-### Option A: repo-local build workflow
-
-The tracked `docker-compose.yml` in the repository builds from the local checkout:
+Start with compose:
 
 ```bash
 docker compose --env-file .env up -d --build
 ```
 
-### Option B: hosted-image workflow
-
-Save the following as `compose.ghcr.yml` on any target host:
-
-```yaml
-services:
-  entra-ca-manager:
-    image: ghcr.io/reprodev/entra-ca-manager:latest
-    container_name: entra-ca-manager
-    env_file:
-      - .env
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: production
-      HOST: 0.0.0.0
-      PORT: 3000
-    volumes:
-      - entra_ca_data:/app/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:' + (process.env.PORT || 3000) + '/health').then((r) => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1));"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-
-volumes:
-  entra_ca_data:
-```
-
-Start the hosted-image deployment:
-
-```bash
-docker compose -f compose.ghcr.yml pull
-docker compose -f compose.ghcr.yml up -d
-```
-
 Inspect status:
 
 ```bash
-docker compose -f compose.ghcr.yml ps
-docker compose -f compose.ghcr.yml logs -f
+docker compose ps
+docker compose logs -f
 ```
 
 Stop services:
 
 ```bash
-docker compose -f compose.ghcr.yml down
+docker compose down
 ```
 
-Both compose options mount persistent app data to `/app/data` using volume `entra_ca_data`.
+The compose file mounts persistent app data to `/app/data` using volume `entra_ca_data`.
 
 ---
 
@@ -183,14 +117,14 @@ Backup guidance:
 
 ## 6) Upgrade procedure
 
-Hosted-image deployment:
+When pulling a newer image/build:
 
 ```bash
-docker compose -f compose.ghcr.yml pull
-docker compose -f compose.ghcr.yml up -d
+docker compose pull
+docker compose up -d --build
 ```
 
-Local build deployment from a repo checkout:
+Or if you build locally each release:
 
 ```bash
 docker compose up -d --build
@@ -204,66 +138,7 @@ Post-upgrade checks:
 
 ---
 
-## 7) Release operations and GHCR publishing
-
-### Tag model
-
-| Trigger | Tags produced | Notes |
-| --- | --- | --- |
-| Push to `main` | `latest`, `sha-<shortsha>` | `:latest` always tracks `main` HEAD |
-| Push a `v*` git tag | `v<version>`, `sha-<shortsha>` | Version tag mirrors the git tag exactly |
-
-All images currently target `linux/amd64`. Build provenance attestations and SBOM metadata are published with each image artifact.
-
-### When to push a release tag
-
-1. Merge the feature branch to `main` via PR (CI Security Gate must pass).
-2. Confirm the `latest` image published correctly (see verification steps below).
-3. Push a semver tag from `main` to trigger the versioned release:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Do not push tags from feature branches — the workflow only produces a clean version image when the tag points to a commit already on `main`.
-
-### Verifying published images
-
-After a `main` push or version tag push, confirm the expected tags are pullable:
-
-```bash
-# latest (from main push)
-docker pull ghcr.io/reprodev/entra-ca-manager:latest
-
-# version tag (from vX.Y.Z tag push)
-docker pull ghcr.io/reprodev/entra-ca-manager:v0.1.0
-
-# immutable SHA tag (use the short SHA from the commit or workflow run)
-docker pull ghcr.io/reprodev/entra-ca-manager:sha-c8b582f
-```
-
-To inspect the image manifest and confirm provenance/SBOM metadata is attached:
-
-```bash
-docker buildx imagetools inspect ghcr.io/reprodev/entra-ca-manager:latest
-```
-
-If the GHCR package is private, authenticate first:
-
-```bash
-docker login ghcr.io
-```
-
-To allow unauthenticated pulls, set the package visibility to **Public** in GitHub → Packages → Package settings after the first publish.
-
-### Branch protection and publish gate
-
-To prevent unreviewed code from publishing a new `:latest` image, enable branch protection on `main` (PR required, at least one review). The publish workflow only runs after merge.
-
----
-
-## 8) Troubleshooting
+## 7) Troubleshooting
 
 - Container exits immediately:
   - run `docker compose logs` and check startup error output
@@ -284,7 +159,7 @@ To prevent unreviewed code from publishing a new `:latest` image, enable branch 
 
 ---
 
-## 9) Security notes
+## 8) Security notes
 
 - Do not bake secrets into images.
 - Use `--env-file` or platform secret stores.
