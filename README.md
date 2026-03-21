@@ -6,6 +6,9 @@
 
 A multi-tenant Azure Conditional Access management platform scaffold for MSP operations teams.
 
+<img src="assets/Entra-CA-Manager01.png" alt="entra-ca-manager logo" width="760" />
+<img src="assets/Entra-CA-Manager04.png" alt="entra-ca-manager logo" width="760" />
+
 This repository is intentionally **demo-first** for whitelabel use:
 
 - no live tenant credentials required by default
@@ -31,21 +34,6 @@ Docker quick start:
 docker build -t entra-ca-manager:latest .
 docker run --rm -p 3000:3000 --env-file .env entra-ca-manager:latest
 ```
-
-Hosted image quick start (no repo clone required):
-
-```bash
-docker pull ghcr.io/reprodev/entra-ca-manager:latest
-docker run --rm -p 3000:3000 --env-file .env ghcr.io/reprodev/entra-ca-manager:latest
-```
-
-If the GHCR package is private, authenticate first:
-
-```bash
-docker login ghcr.io
-```
-
-Published GHCR images currently target `linux/amd64` and include provenance/SBOM metadata.
 
 Core endpoints:
 
@@ -210,7 +198,7 @@ KEYVAULT_SECRET_MAPPINGS=SESSION_SECRET=ca-session-secret,SSO_CLIENT_SECRET=ca-s
 
 ### Option C - Docker / containerized
 
-Build locally from this repo:
+Build and run with Docker:
 
 ```bash
 docker build -t entra-ca-manager:latest .
@@ -222,58 +210,13 @@ docker run --name entra-ca-manager --detach \
   entra-ca-manager:latest
 ```
 
-Run the published GHCR image without cloning this repo:
+Or use Docker Compose:
 
 ```bash
-docker pull ghcr.io/reprodev/entra-ca-manager:latest
-docker run --name entra-ca-manager --detach \
-  -p 3000:3000 \
-  --env-file .env \
-  -e NODE_ENV=production \
-  -v entra_ca_data:/app/data \
-  ghcr.io/reprodev/entra-ca-manager:latest
+docker compose up -d --build
 ```
 
-Use `docker login ghcr.io` first if the package is private. If the package is public, anonymous pulls work without a login.
-Published GHCR images currently target `linux/amd64` and include provenance/SBOM metadata.
-
-Use Docker Compose with the published image by saving the following as `compose.ghcr.yml` on the target host:
-
-```yaml
-services:
-  entra-ca-manager:
-    image: ghcr.io/reprodev/entra-ca-manager:latest
-    container_name: entra-ca-manager
-    env_file:
-      - .env
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: production
-      HOST: 0.0.0.0
-      PORT: 3000
-    volumes:
-      - entra_ca_data:/app/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:' + (process.env.PORT || 3000) + '/health').then((r) => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1));"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-
-volumes:
-  entra_ca_data:
-```
-
-Start and update the hosted-image deployment with:
-
-```bash
-docker compose -f compose.ghcr.yml pull
-docker compose -f compose.ghcr.yml up -d
-```
-
-The tracked [`docker-compose.yml`](docker-compose.yml) stays as the repo-local build workflow. To use that local build path:
+To pass your environment settings with Compose:
 
 ```bash
 docker compose --env-file .env up -d --build
@@ -287,11 +230,9 @@ docker compose ps
 docker compose down
 ```
 
-To pin a deployment to a release instead of the moving `:latest` tag, replace it with a published version tag such as `:v0.1.0`. Immutable `:sha-<shortsha>` tags are also published for commit-specific pinning.
+For a full container runbook (production env vars, persistence, updates, troubleshooting), see [`docs/docker-deployment-guide.md`](docs/docker-deployment-guide.md).
 
-For a full container runbook, registry publishing notes, and hosted-image upgrade flow, see [`docs/docker-deployment-guide.md`](docs/docker-deployment-guide.md).
-
-### Option D: Windows RDS / Azure Virtual Desktop (RemoteApp)
+### Option D — Windows RDS / Azure Virtual Desktop (RemoteApp)
 
 For MSP staff on Windows Remote Desktop Services or Azure Virtual Desktop, the app can be
 published as a RemoteApp shortcut using Edge in app mode — no installer or desktop packaging

@@ -69,7 +69,7 @@ To pin to a release instead of the moving `:latest` tag, use a published version
 
 ### Option A: repo-local build workflow
 
-The tracked `docker-compose.yml` in the repository still builds from the local checkout:
+The tracked `docker-compose.yml` in the repository builds from the local checkout:
 
 ```bash
 docker compose --env-file .env up -d --build
@@ -186,13 +186,6 @@ Backup guidance:
 Hosted-image deployment:
 
 ```bash
-docker compose pull
-docker compose up -d
-```
-
-If you named the file `compose.ghcr.yml`, run:
-
-```bash
 docker compose -f compose.ghcr.yml pull
 docker compose -f compose.ghcr.yml up -d
 ```
@@ -246,7 +239,7 @@ docker pull ghcr.io/reprodev/entra-ca-manager:latest
 # version tag (from vX.Y.Z tag push)
 docker pull ghcr.io/reprodev/entra-ca-manager:v0.1.0
 
-# immutable SHA tag (from either trigger — use the short SHA from the commit or workflow run)
+# immutable SHA tag (use the short SHA from the commit or workflow run)
 docker pull ghcr.io/reprodev/entra-ca-manager:sha-c8b582f
 ```
 
@@ -266,7 +259,7 @@ To allow unauthenticated pulls, set the package visibility to **Public** in GitH
 
 ### Branch protection and publish gate
 
-To prevent unreviewed code from publishing a new `:latest` image, enable branch protection on `main` (PR required, at least one review). The publish workflow will only run after merge.
+To prevent unreviewed code from publishing a new `:latest` image, enable branch protection on `main` (PR required, at least one review). The publish workflow only runs after merge.
 
 ---
 
