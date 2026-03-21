@@ -317,6 +317,7 @@ Important groups:
 - `docs/incident-response.md`
 - `docs/threat-model.md`
 - `docs/keyvault-rotation-runbook.md`
+- [`docs/rds-remoteapp-deployment-guide.md`](docs/rds-remoteapp-deployment-guide.md)
 - `graph-permissions.md`
 
 ---
